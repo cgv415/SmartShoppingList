@@ -41,6 +41,7 @@ public class OCR extends Activity implements View.OnClickListener {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ocr);
+        //Prueba
 
         statusMessage = (TextView)findViewById(R.id.status_message);
         textValue = (TextView)findViewById(R.id.text_value);
