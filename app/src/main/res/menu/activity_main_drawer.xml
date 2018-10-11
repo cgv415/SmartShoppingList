@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_principal"
+            android:icon="@drawable/ic_principal_manage"
+            android:title="Principal" />
+        <item
+            android:id="@+id/nav_listas"
+            android:icon="@drawable/ic_listas_manage"
+            android:title="Listas" />
+        <item
+            android:id="@+id/nav_productos"
+            android:icon="@drawable/ic_productos_manage"
+            android:title="Productos" />
+        <item
+            android:id="@+id/nav_conjuntos"
+            android:icon="@drawable/ic_set_manage"
+            android:title="Conjuntos" />
+        <item
+            android:id="@+id/nav_locales"
+            android:icon="@drawable/ic_local_manage"
+            android:title="Locales" />
+        <item
+            android:id="@+id/nav_tickets"
+            android:icon="@drawable/ic_ticket_icon"
+            android:title="Tickets" />
+        <item
+            android:id="@+id/nav_est"
+            android:icon="@drawable/ic_estadisticas_manage"
+            android:title="Estadisticas" />
+        <item
+            android:id="@+id/nav_faq"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="FAQ" />
+    </group>
+
+</menu>
