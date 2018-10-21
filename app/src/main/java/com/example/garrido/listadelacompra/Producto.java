@@ -1,8 +1,10 @@
 package com.example.garrido.listadelacompra;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-public class Producto implements Comparable<Producto>{
+public class Producto implements Comparable<Producto>,Parcelable{
     private String id;
     private String nombre;
     private String descripcion;
@@ -21,6 +23,31 @@ public class Producto implements Comparable<Producto>{
     public Producto(String nombre) {
         this.nombre = nombre;
     }
+
+    protected Producto(Parcel in) {
+        id = in.readString();
+        nombre = in.readString();
+        descripcion = in.readString();
+        etiqueta = in.readString();
+        marca = in.readString();
+        if (in.readByte() == 0) {
+            precio = null;
+        } else {
+            precio = in.readDouble();
+        }
+    }
+
+    public static final Creator<Producto> CREATOR = new Creator<Producto>() {
+        @Override
+        public Producto createFromParcel(Parcel in) {
+            return new Producto(in);
+        }
+
+        @Override
+        public Producto[] newArray(int size) {
+            return new Producto[size];
+        }
+    };
 
     public String getMarca() {
         return marca;
@@ -131,5 +158,19 @@ public class Producto implements Comparable<Producto>{
         }else{
             return this.getNombre().compareTo(producto.getNombre());
         }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(nombre);
+        parcel.writeString(descripcion);
+        parcel.writeString(local.getNombre());
+        parcel.writeString(marca);
+        parcel.writeDouble(precio);
     }
 }

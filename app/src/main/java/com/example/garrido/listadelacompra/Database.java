@@ -48,6 +48,7 @@ public interface Database {
     long insertarCategoria(Categoria categoria);
 
     ArrayList<Categoria> obtenerCategorias();
+    ArrayList<String> obtenerNombreCategorias();
     Categoria obtenerCategoriaById(String id);
     Categoria obtenerCategoria(String nombre);
 
@@ -60,6 +61,7 @@ public interface Database {
     long insertarSubcategoria(Subcategoria subcategoria);
 
     ArrayList<Subcategoria> obtenerSubcategorias();
+    ArrayList<String> obtenerNombreSubcategorias();
     Subcategoria obtenerSubcategoriaById(String id);
     Subcategoria obtenerSubcategoria(String nombre);
 
@@ -185,6 +187,7 @@ public interface Database {
     long insertarTicket(Ticket ticket);
 
     ArrayList<Ticket> obtenerTickets();
+    Ticket obtenerTicket(String id);
     Ticket obtenerProductos_Ticket(Ticket ticket);
 
     boolean eliminarTicket(Ticket ticket);

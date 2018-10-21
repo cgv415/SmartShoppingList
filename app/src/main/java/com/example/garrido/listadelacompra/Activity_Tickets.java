@@ -1,9 +1,12 @@
 package com.example.garrido.listadelacompra;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,12 +18,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.Toast;
 
-import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Activity_Tickets extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -39,8 +40,14 @@ public class Activity_Tickets extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(),OCR.class);
-                startActivity(intent);
+                //Intent intent = new Intent(getApplicationContext(),OCR.class);
+                //intent.putExtra("estatico",false);
+
+                popUp();
+                //Intent intent = new Intent(view.getContext(), OcrCaptureActivity.class);
+                //intent.putExtra(OcrCaptureActivity.AutoFocus, true);
+                //intent.putExtra(OcrCaptureActivity.UseFlash, false);
+                //startActivity(intent);
             }
         });
 
@@ -53,9 +60,13 @@ public class Activity_Tickets extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        ListView lista = (ListView) this.findViewById(R.id.listview_tickets);
-        ArrayList<Ticket> tickets = manager.obtenerTickets();
-        ArrayList<String> list = new ArrayList<>();
+        Menu menu = navigationView.getMenu();
+        MenuItem nav = menu.findItem(R.id.nav_tickets);
+        nav.setChecked(true);
+
+        ListView lista = this.findViewById(R.id.listview_tickets);
+        final ArrayList<Ticket> tickets = manager.obtenerTickets();
+        final ArrayList<String> list = new ArrayList<>();
         for (Ticket ticket :
                 tickets) {
             Local local = ticket.getLocal();
@@ -69,9 +80,39 @@ public class Activity_Tickets extends AppCompatActivity
         lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(getApplicationContext(),"Ticket seleccionado",Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(),"Ticket seleccionado",Toast.LENGTH_LONG).show();
+                ArrayList<Producto> productos = manager.obtenerFacts(tickets.get(i).getIdTicket());
+
+                Intent intent = new Intent(getApplicationContext(),OCR.class);
+                intent.putExtra("status",1);
+                intent.putExtra("idTicket",tickets.get(i).getIdTicket());
+                startActivity(intent);
             }
         });
+    }
+
+    public void popUp() {
+        // Use the Builder class for convenient dialog construction
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        String [] opciones = {"Escanear Ticket","Crear Ticket Manual"};
+
+        builder.setTitle("Crear un nuevo Ticket");
+        builder.setItems(opciones, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if(i==0){
+                    Intent intent = new Intent(builder.getContext(), OcrCaptureActivity.class);
+                    intent.putExtra(OcrCaptureActivity.AutoFocus, true);
+                    intent.putExtra(OcrCaptureActivity.UseFlash, false);
+                    startActivity(intent);
+                }else{
+
+                }
+            }
+        });
+        builder.show();
     }
 
     @Override
@@ -109,24 +150,11 @@ public class Activity_Tickets extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        finish();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        manager.gestionarMenu(item,this);
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

@@ -1,8 +1,10 @@
 package com.example.garrido.listadelacompra;
 
+import android.support.annotation.NonNull;
+
 import java.util.ArrayList;
 
-public class Categoria {
+public class Categoria implements Comparable<Categoria>{
     private String id;
     private String nombre;
     private ArrayList<Subcategoria> subcategorias;
@@ -52,6 +54,19 @@ public class Categoria {
             return true;
         }else{
             return false;
+        }
+    }
+
+    @Override
+    public int compareTo(@NonNull Categoria categoria) {
+        if(this.getId()!=null && categoria.getId()!=null){
+            return this.getId().compareTo(categoria.getId());
+        }else if (this.getId()!=null && categoria.getId()==null){
+            return 1;
+        }else if(this.getId()==null && categoria.getId()!=null){
+            return -1;
+        }else{
+            return this.getNombre().compareTo(categoria.getNombre());
         }
     }
 }

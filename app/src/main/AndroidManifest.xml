@@ -26,12 +26,16 @@
             android:label="@string/title_activity__tickets"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".OCR"
-            android:label="@string/title_activity_ocr"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity
             android:name=".OcrCaptureActivity"
             android:label="@string/title_activity_ocrCapture"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".OCR"
+            android:label="@string/title_activity_ocr"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity_Productos"
+            android:label="@string/title_activity__productos"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

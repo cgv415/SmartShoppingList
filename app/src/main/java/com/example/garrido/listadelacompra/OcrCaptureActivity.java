@@ -165,9 +165,38 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                 }
             }
 
+        }
 
+        int sizeProductos = arrProductos.size();
+        int sizePrecios = precios.size();
+        ArrayList<String> nombreProductos = new ArrayList<>();
+
+        for(int i = 0 ; i < sizeProductos ; i++){
+            if(i<sizePrecios){
+                String pr = arrProductos.get(i).getNombre();
+                pr+="\t"+precios.get(i);
+                nombreProductos.add(pr);
+            }
 
         }
+
+        //Intent data = new Intent();
+        Intent intent = new Intent(getApplicationContext(),OCR.class);
+        intent.putExtra("productos", nombreProductos);
+        /**/
+        ArrayList<String> datos = new ArrayList<>();
+        datos.add("mercadona s.a");
+        datos.add("10-10-2018");
+        datos.add("18:20");
+        datos.add("15.55");
+        intent.putExtra("datos",datos);
+        intent.putExtra("status",0);
+        startActivity(intent);
+
+        //setResult(CommonStatusCodes.SUCCESS, data);
+        //intent.putExtra("estatico",false);
+
+        //finish();
         /*Todo fin*/
         // read parameters from the intent used to launch the activity.
         boolean autoFocus = getIntent().getBooleanExtra(AutoFocus, false);
@@ -526,6 +555,16 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                         arrProductos.add(pr);
                     }
                 }
+            }
+
+        }
+
+        int sizeProductos = arrProductos.size();
+        int sizePrecios = precios.size();
+
+        for(int i = 0 ; i < sizeProductos ; i++){
+            if(i<sizePrecios){
+                arrProductos.get(i).setPrecio(precios.get(i));
             }
 
         }
