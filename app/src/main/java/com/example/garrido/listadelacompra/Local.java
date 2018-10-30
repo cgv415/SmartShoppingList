@@ -1,6 +1,7 @@
 package com.example.garrido.listadelacompra;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 public class Local {
     private String id;
@@ -86,6 +87,16 @@ public class Local {
 
     public ArrayList<Producto> getProductos() {
         return productos;
+    }
+
+    public ArrayList<String> getNombreProductos(){
+        ArrayList<String> nombres = new ArrayList<>();
+        for( Producto p
+                : productos){
+            nombres.add(p.getNombre());
+        }
+
+        return nombres;
     }
 
     public void setProductos(ArrayList<Producto> productos) {

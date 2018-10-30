@@ -36,6 +36,18 @@
         <activity
             android:name=".Activity_Productos"
             android:label="@string/title_activity__productos"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity_Listas"
+            android:label="@string/title_activity__listas"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity_Conjuntos"
+            android:label="@string/title_activity__conjuntos"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity_Local"
+            android:label="@string/title_activity__local"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

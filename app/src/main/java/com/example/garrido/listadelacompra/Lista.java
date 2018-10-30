@@ -7,14 +7,16 @@ public class Lista {
     private String id;
     private String nombre;
     private String descripcion;
-    private TreeMap<Producto,Integer> productos;
+    private ArrayList<Producto> productos;
+    private boolean principal;
 
-    public Lista(String nombre, String descripcion) {
+    public Lista(String nombre, String descripcion, boolean principal) {
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.principal = principal;
     }
 
-    public Lista(String id, String nombre, String descripcion, TreeMap<Producto,Integer> productos) {
+    public Lista(String id, String nombre, String descripcion, ArrayList<Producto> productos) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -22,6 +24,9 @@ public class Lista {
     }
 
     public Lista() {
+        this.id = "0";
+        this.nombre = "";
+        this.productos = new ArrayList<>();
     }
 
     public String getId() {
@@ -48,11 +53,30 @@ public class Lista {
         this.descripcion = descripcion;
     }
 
-    public TreeMap<Producto,Integer> getProductos() {
+    public ArrayList<Producto> getProductos() {
         return productos;
     }
 
-    public void setProductos(TreeMap<Producto,Integer> productos) {
+    public void setProductos(ArrayList<Producto> productos) {
         this.productos = productos;
+    }
+
+    public boolean isPrincipal() {
+        return principal;
+    }
+
+    public void setPrincipal(boolean principal) {
+        this.principal = principal;
+    }
+
+    public ArrayList<String> getNombreProductos(){
+        ArrayList<String> nombres = new ArrayList<>();
+
+        for(Producto p
+                : productos){
+            nombres.add(p.getNombre());
+        }
+
+        return nombres;
     }
 }

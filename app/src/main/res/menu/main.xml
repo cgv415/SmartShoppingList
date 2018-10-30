@@ -1,9 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_listas"
+        android:icon="@drawable/ic_listas_manage"
+        android:title="listas"
+        app:showAsAction="always">
+            <menu>
+
+            </menu>
+
+    </item>
+
+    <item
+        android:id="@+id/action_ordenar"
+        android:icon="@drawable/ic_sort"
+        android:title="Ordenar"
+        app:showAsAction="always">
+        <!-- "file" submenu -->
+        <menu>
+            <item
+                android:id="@+id/a_z"
+                android:title="A-Z" />
+            <item
+                android:id="@+id/categoria"
+                android:title="Categoria" />
+            <item
+                android:id="@+id/etiqueta"
+                android:title="Etiqueta" />
+        </menu>
+    </item>
+
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
+        android:icon="@drawable/ic_edit"
+        android:title="opciones"
+        app:showAsAction="always">
+
+        <!-- "file" submenu -->
+        <menu>
+            <item
+                android:id="@+id/action_add"
+                android:title="Insertar nuevo" />
+            <item
+                android:id="@+id/action_edit"
+                android:title="Editar" />
+            <item
+                android:id="@+id/action_eliminar"
+                android:title="Eliminar" />
+            <item
+                android:id="@+id/action_limpiar"
+                android:title="Limpiar" />
+        </menu>
+
+
+    </item>
+
 </menu>

@@ -20,9 +20,11 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -63,6 +65,8 @@ public class Activity_Productos extends AppCompatActivity
     Spinner spSubcategoria;
 
     String agruparPor = "categoria";
+
+    Button comparar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,9 +166,11 @@ public class Activity_Productos extends AppCompatActivity
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if (ExpandableListView.getPackedPositionType(l) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+
+                    //Mandar a listas
                     String nombreproducto = expandableListView.getItemAtPosition(i).toString();
                     Producto producto = manager.obtenerProductoByNombre(nombreproducto);
-                    popUpEliminar(producto);
+                    popUpInsertarEnLista(producto);
 
                 }
                 return true;
@@ -474,6 +480,15 @@ public class Activity_Productos extends AppCompatActivity
             }
         });
 
+        comparar = v.findViewById(R.id.btn_gestionar);
+
+        comparar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                popUpCompararProducto(producto);
+            }
+        });
+
         etNombre = v.findViewById(R.id.et_nombre_producto);
         etNombre.setText(producto.getNombre());
         etDescripcion = v.findViewById(R.id.et_descripcion);
@@ -608,6 +623,53 @@ public class Activity_Productos extends AppCompatActivity
         builder.show();
     }
 
+    public void popUpInsertarEnLista(final Producto producto){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Insertar en lista");
+        //builder.setMessage("Selecciona las listas donde quieres insertar el producto");
+        final ArrayList<String> listas = manager.obtenerNombreListas();
+
+        String[] mStringArray = new String[listas.size()];
+        mStringArray = listas.toArray(mStringArray);
+
+        final ArrayList<Integer> mSelectedItems = new ArrayList<>();
+
+        builder.setMultiChoiceItems(mStringArray, null,
+                new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which,
+                                        boolean isChecked) {
+                        if (isChecked) {
+                            // If the user checked the item, add it to the selected items
+                            mSelectedItems.add(which);
+                        } else if (mSelectedItems.contains(which)) {
+                            // Else, if the item is already in the array, remove it
+                            mSelectedItems.remove(Integer.valueOf(which));
+                        }
+                    }
+                })
+                // Set the action buttons
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        for(int i = 0 ; i < mSelectedItems.size() ; i ++){
+                            String nombre = listas.get(mSelectedItems.get(i));
+                            Lista lista = manager.obtenerListaByNombre(nombre);
+                            manager.insertarProducto_Lista(producto,lista);
+                        }
+                        Toast.makeText(getApplicationContext(),"Producto insertado con exito!",Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
     public void popUpEliminar(final Producto producto){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -629,6 +691,47 @@ public class Activity_Productos extends AppCompatActivity
                 });
         builder.show();
     }
+
+    public void popUpCompararProducto(final Producto producto){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_comparar, null);
+        builder.setView(v);
+        builder.setTitle(producto.getNombre());
+
+        ListView lvComparar = v.findViewById(R.id.lv_comparar);
+
+        TreeMap<String,String> comparaciones = manager.obtenerLocales_Producto(producto.getNombre());
+
+        AdapterComparar listAdapter2 = new AdapterComparar(this, comparaciones);
+        lvComparar.setAdapter(listAdapter2);
+
+        /*ArrayList<String> list = new ArrayList<>();
+        list.add("Hola");
+        list.add("Hola 2");
+        list.add("Hola 3");
+
+        ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,list);
+        lvComparar.setAdapter(adapter);*/
+
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                manager.eliminarProducto(producto);
+
+                actualizarLista();
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

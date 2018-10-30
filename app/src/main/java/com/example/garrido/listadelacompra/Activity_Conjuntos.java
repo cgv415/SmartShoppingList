@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.SubMenu;
 import android.view.View;
@@ -21,12 +20,11 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -36,10 +34,13 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-public class MainActivity extends AppCompatActivity
+public class Activity_Conjuntos extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     DataBaseManager manager;
+    ListView lista;
+    ArrayList<String> nombresConjuntos;
+
     AutoCompleteTextView buscador;
 
     ExpandableListView expandableListView;
@@ -49,35 +50,48 @@ public class MainActivity extends AppCompatActivity
     ArrayList<String> arrayBuscador;
     ArrayList<String> contraidos;
     android.widget.ExpandableListAdapter listAdapter;
-    ArrayList<Lista> listas;
+    ArrayList<Conjunto> conjuntos;
+    Conjunto conjunto;
 
     Spinner spTipo;
 
-    Lista lista;
 
     String agruparPor = "categoria";
     TreeMap<String,ArrayList<String>> tachados = new TreeMap<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity__productos);
+        setContentView(R.layout.activity__conjuntos);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         manager = new DataBaseManager(this);
-        manager.actualizar();
+        try{
+            conjunto = manager.obtenerConjuntos().get(0);
+            setTitle(conjunto.getNombre());
+        }catch (Exception e){
+            conjunto = new Conjunto();
+            conjunto.setNombre("");
+            setTitle("Conjuntos");
+        }
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(lista.getNombre().equals("")){
-                    popUpInsertarLista();
+                if(conjunto.getNombre().equals("")){
+                    popUpInsertar();
                 }else{
-                    popUpInsertarProductoEnLista();
+                    popUpInsertarProductoEnConjunto();
                 }
+            }
+        });
 
+        FloatingActionButton copy = findViewById(R.id.copy);
+        copy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                popUpInsertarEnLista();
             }
         });
 
@@ -92,21 +106,10 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         Menu menu = navigationView.getMenu();
-        MenuItem item = menu.findItem(R.id.nav_principal);
+        MenuItem item = menu.findItem(R.id.nav_conjuntos);
         item.setChecked(true);
 
-        if(getIntent().hasExtra("lista")){
-            String nombreLista = getIntent().getStringExtra("lista");
-            lista = manager.obtenerListaByNombre(nombreLista);
-        }else{
-            lista = manager.obtenerListaPrincipal();
-        }
-
-        if(lista.getNombre().equals("")){
-            popUpInsertarLista();
-        }else{
-            this.setTitle(lista.getNombre());
-        }
+        nombresConjuntos = manager.obtenerNombreConjuntos();
 
         contraidos = new ArrayList<>();
 
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity
                 String tipo = spTipo.getSelectedItem().toString();
                 switch (tipo) {
                     case "producto": {
-                        arrayBuscador = lista.getNombreProductos();
+                        arrayBuscador = conjunto.getNombreProductos();
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
                                 android.R.layout.simple_dropdown_item_1line, arrayBuscador);
                         buscador.setAdapter(adapter);
@@ -169,39 +172,9 @@ public class MainActivity extends AppCompatActivity
             public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long l) {
                 Toast.makeText(getApplicationContext(), agrupacion.get(groupPosition)+ ":" + map.get(agrupacion.get(groupPosition)).get(childPosition),Toast.LENGTH_SHORT).show();
 
-                TextView texto = view.findViewById(R.id.tvChild);
-
-                String key = agrupacion.get(groupPosition);
-
-                ArrayList<String> valueTachados;
-                ArrayList<String> valueMap;
-
-                if(tachados.containsKey(key)){
-                    valueTachados = tachados.get(key);
-                    if(valueTachados.contains(texto.getText().toString())){
-                        valueTachados.remove(texto.getText().toString());
-                    }else{
-                        valueTachados.add(texto.getText().toString());
-                    }
-                }else{
-                    valueTachados = new ArrayList<>();
-                    valueTachados.add(texto.getText().toString());
-                }
-                tachados.put(key,valueTachados);
-
-
-                if(valueTachados.contains(texto.getText().toString())){
-                    valueMap = map.get(key);
-                    valueMap.remove(texto.getText().toString());
-                    valueMap.add(texto.getText().toString());
-                }else{
-                    valueMap = map.get(key);
-                    Collections.sort(valueMap);
-                }
-                map.put(key,valueMap);
-
-                actualizarAdapter();
-
+                String nombreproducto = map.get(agrupacion.get(groupPosition)).get(childPosition);
+                Producto producto = manager.obtenerProductoByNombre(nombreproducto);
+                popUpEliminarDeConjunto(producto);
 
                 return false;
             }
@@ -229,7 +202,7 @@ public class MainActivity extends AppCompatActivity
 
                     String nombreproducto = expandableListView.getItemAtPosition(i).toString();
                     Producto producto = manager.obtenerProductoByNombre(nombreproducto);
-                    popUpEliminarDeLista(producto);
+                    popUpEliminarDeConjunto(producto);
 
 
                 }
@@ -240,7 +213,7 @@ public class MainActivity extends AppCompatActivity
 
         actualizarLista();
 
-        arrayBuscador = lista.getNombreProductos();
+        arrayBuscador = conjunto.getNombreProductos();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, arrayBuscador);
         buscador.setAdapter(adapter);
@@ -330,34 +303,29 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-
     }
 
-    public void popUpInsertarLista(){
+    public void popUpInsertar(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
 
-        final View v = inflater.inflate(R.layout.popup_insertar_lista, null);
+        final View v = inflater.inflate(R.layout.popup_insertar_conjunto, null);
 
 
-        final EditText etNombre = v.findViewById(R.id.et_nombre_lista);
-        final EditText etDescripcion = v.findViewById(R.id.et_descripcion);
-        final CheckBox cbPrincipal = v.findViewById(R.id.cb_principal);
+        final EditText etNombre = v.findViewById(R.id.et_nombre_conjunto);
+        final EditText etDescripcion = v.findViewById(R.id.et_descripcion_conjunto);
 
-        builder.setTitle("Crea tu primera Lista");
+        builder.setTitle("Crear conjunto");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                lista.setNombre(etNombre.getText().toString());
-                lista.setDescripcion(etDescripcion.getText().toString());
-                lista.setPrincipal(true);
+                Conjunto conjunto = new Conjunto();
+                conjunto.setNombre(etNombre.getText().toString());
+                conjunto.setDescripcion(etDescripcion.getText().toString());
 
-                long idLista = manager.insertarLista(lista);
-                lista.setId(String.valueOf(idLista));
-
-                setTitle(lista.getNombre());
-                actualizarLista();
+                long idConjunto = manager.insertarConjunto(conjunto);
+                nombresConjuntos.add(conjunto.getNombre());
 
             }
         })
@@ -369,74 +337,10 @@ public class MainActivity extends AppCompatActivity
         builder.show();
     }
 
-    public void popUpModificar(final Lista lista){
+    public void popUpInsertarProductoEnConjunto(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-
-        final View v = inflater.inflate(R.layout.popup_insertar_lista, null);
-
-
-        final EditText etNombre = v.findViewById(R.id.et_nombre_lista);
-        final EditText etDescripcion = v.findViewById(R.id.et_descripcion);
-        final CheckBox cbPrincipal = v.findViewById(R.id.cb_principal);
-
-        etNombre.setText(lista.getNombre());
-        etDescripcion.setText(lista.getDescripcion());
-        cbPrincipal.setChecked(lista.isPrincipal());
-
-        builder.setTitle("Modificar Lista");
-        builder.setView(v);
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                int pos = listas.indexOf(lista.getNombre());
-                lista.setNombre(etNombre.getText().toString());
-                lista.setDescripcion(etDescripcion.getText().toString());
-                if(listas.size()==0){
-                    lista.setPrincipal(true);
-                }else{
-                    lista.setPrincipal(cbPrincipal.isChecked());
-                }
-
-                manager.modificarLista(lista);
-
-                //listas.set(pos,lista);
-                setTitle(lista.getNombre());
-
-            }
-        })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
-    }
-
-    public void popUpEliminar(final Lista lista){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setTitle("Eliminar Lista");
-        builder.setMessage("¿Desea eliminar la lista '" + lista.getNombre() + "' y todos sus productos?");
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                manager.eliminarLista(lista);
-
-            }
-        })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
-    }
-
-    public void popUpInsertarProductoEnLista(){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Insertar en lista");
+        builder.setTitle("Insertar en conjunto");
         LayoutInflater inflater = getLayoutInflater();
 
         final View v = inflater.inflate(R.layout.popup_insertar_en_lista, null);
@@ -454,21 +358,27 @@ public class MainActivity extends AppCompatActivity
         buscadorInsertar.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Toast.makeText(getApplicationContext(),buscadorInsertar.getText().toString(),Toast.LENGTH_LONG).show();
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                Toast.makeText(getApplicationContext(),buscadorInsertar.getText().toString(),Toast.LENGTH_LONG).show();
 
-                        StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),",");
-                        while(tokenizer.hasMoreTokens()){
-                            String token = tokenizer.nextToken();
-                            Producto producto = manager.obtenerProductoByNombre(token);
-                            manager.insertarProducto_Lista(producto,lista);
+                StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),",");
+                while(tokenizer.hasMoreTokens()){
+                    String token = tokenizer.nextToken();
+                    if(!token.equals(" ")){
+                        Producto producto = manager.obtenerProductoByNombre(token);
+                        if(producto != null){
+                            manager.insertarProducto_Conjunto(producto,conjunto);
+                            conjunto.insertarProducto(producto);
                         }
-                        actualizarLista();
-                        Toast.makeText(getApplicationContext(),"Productos insertados con exito!",Toast.LENGTH_LONG).show();
 
                     }
-                })
+                }
+                actualizarLista();
+                Toast.makeText(getApplicationContext(),"Productos insertados con exito!",Toast.LENGTH_LONG).show();
+
+            }
+        })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
@@ -478,16 +388,17 @@ public class MainActivity extends AppCompatActivity
         builder.show();
     }
 
-    public void popUpEliminarDeLista(final Producto producto){
+    public void popUpEliminarDeConjunto(final Producto producto){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("Eliminar producto");
-        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "' de la lista?");
+        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "' del conjunto?");
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                manager.eliminarProducto_Lista(producto,lista);
+                manager.eliminarProducto_Conjunto(producto,conjunto);
+                conjunto.eliminarProducto(producto);
                 actualizarLista();
             }
         })
@@ -499,14 +410,104 @@ public class MainActivity extends AppCompatActivity
         builder.show();
     }
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
+    public void popUpModificarConjunto(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_productos_conjuntos, null);
+
+        final EditText etNombre = v.findViewById(R.id.et_nombre);
+        final EditText etDescripcion = v.findViewById(R.id.et_descripcion);
+
+
+        etNombre.setText(conjunto.getNombre());
+        etDescripcion.setText(conjunto.getDescripcion());
+
+        builder.setTitle("Modificar conjunto");
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Conjunto conjunto = new Conjunto();
+                conjunto.setNombre(etNombre.getText().toString());
+                conjunto.setDescripcion(etDescripcion.getText().toString());
+                manager.modificarConjunto(conjunto);
+                setTitle(conjunto.getNombre());
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpEliminarConjunto(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Eliminar Conjunto");
+        builder.setMessage("¿Desea eliminar la conjunto '" + conjunto.getNombre() + "' y todos sus productos?");
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                manager.eliminarConjunto(conjunto);
+
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpInsertarEnLista(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Insertar en lista");
+        //builder.setMessage("Selecciona las listas donde quieres insertar el producto");
+        final ArrayList<String> listas = manager.obtenerNombreListas();
+
+        String[] mStringArray = new String[listas.size()];
+        mStringArray = listas.toArray(mStringArray);
+
+        final ArrayList<Integer> mSelectedItems = new ArrayList<>();
+
+        builder.setMultiChoiceItems(mStringArray, null,
+                new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which,
+                                        boolean isChecked) {
+                        if (isChecked) {
+                            // If the user checked the item, add it to the selected items
+                            mSelectedItems.add(which);
+                        } else if (mSelectedItems.contains(which)) {
+                            // Else, if the item is already in the array, remove it
+                            mSelectedItems.remove(Integer.valueOf(which));
+                        }
+                    }
+                })
+                // Set the action buttons
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        for(int i = 0 ; i < mSelectedItems.size() ; i ++){
+                            String nombre = listas.get(mSelectedItems.get(i));
+                            Lista lista = manager.obtenerListaByNombre(nombre);
+                            manager.insertarProductos_Lista(conjunto,lista);
+                        }
+                        Toast.makeText(getApplicationContext(),"Productos insertados con exito!",Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
     }
 
     public void actualizarLista(){
@@ -525,7 +526,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void actualizarListaPorOrden(){
-        productos = lista.getProductos();
+        productos = conjunto.getProductos();
         agrupacion = new ArrayList<>();
         map = new TreeMap<>();
 
@@ -547,7 +548,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void actualizarListaPorEtiqueta(){
-        productos = lista.getProductos();
+        productos = conjunto.getProductos();
         agrupacion = new ArrayList<>();
         map = new TreeMap<>();
 
@@ -569,25 +570,25 @@ public class MainActivity extends AppCompatActivity
 
     public void actualizarListaPorCategoria(){
 
-        productos = lista.getProductos();
+        productos = conjunto.getProductos();
         agrupacion = new ArrayList<>();
         map = new TreeMap<>();
 
         for(int i = 0 ; i < productos.size() ; i ++){
 
-                Categoria categoria = productos.get(i).getCategoria();
-                if(!agrupacion.contains(categoria.getNombre())){
-                    agrupacion.add(categoria.getNombre());
-                }
-                Collections.sort(agrupacion);
+            Categoria categoria = productos.get(i).getCategoria();
+            if(!agrupacion.contains(categoria.getNombre())){
+                agrupacion.add(categoria.getNombre());
+            }
+            Collections.sort(agrupacion);
 
-                ArrayList<String> p = new ArrayList<>();
+            ArrayList<String> p = new ArrayList<>();
 
-                if(map.containsKey(categoria.getNombre())){
-                    p  = map.get(categoria.getNombre());
-                }
-                p.add(productos.get(i).getNombre());
-                map.put(categoria.getNombre(),p);
+            if(map.containsKey(categoria.getNombre())){
+                p  = map.get(categoria.getNombre());
+            }
+            p.add(productos.get(i).getNombre());
+            map.put(categoria.getNombre(),p);
         }
 
         actualizarAdapter();
@@ -605,21 +606,36 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public void limpiarConjunto(){
+        manager.eliminarProductos_Conjunto(conjunto);
+        conjunto.setProductos(new ArrayList<Producto>());
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         //action_search
 
-        listas = manager.obtenerListas();
+        conjuntos = manager.obtenerConjuntos();
 
         MenuItem item = menu.findItem(R.id.action_listas);
 
         SubMenu submenu = item.getSubMenu();
 
-        for(int i = 0 ; i < listas.size(); i++){
-            String nombre = listas.get(i).getNombre();
-            int id = Integer.parseInt(listas.get(i).getId());
+        for(int i = 0 ; i < conjuntos.size(); i++){
+            String nombre = conjuntos.get(i).getNombre();
+            int id = Integer.parseInt(conjuntos.get(i).getId());
             submenu.add(1,id,id,nombre);
         }
 
@@ -631,14 +647,13 @@ public class MainActivity extends AppCompatActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-
         int group = item.getGroupId();
         contraidos.clear();
 
         if(group == 1){
             int id = item.getItemId();
-            lista = manager.obtenerListaById(String.valueOf(id));
-            setTitle(lista.getNombre());
+            conjunto = manager.obtenerConjuntoById(String.valueOf(id));
+            setTitle(conjunto.getNombre());
         }else {
             switch (item.getItemId()) {
                 case R.id.a_z:
@@ -653,16 +668,16 @@ public class MainActivity extends AppCompatActivity
                 case R.id.action_listas:
                     break;
                 case R.id.action_add:
-                    popUpInsertarLista();
+                    popUpInsertar();
                     break;
                 case R.id.action_edit:
-                    popUpModificar(lista);
+                    popUpModificarConjunto();
                     break;
                 case R.id.action_eliminar:
-                    popUpEliminar(lista);
+                    popUpEliminarConjunto();
                     break;
                 case R.id.action_limpiar:
-                    limpiarLista();
+                    limpiarConjunto();
                     break;
                 default:
 
@@ -673,11 +688,6 @@ public class MainActivity extends AppCompatActivity
         actualizarLista();
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void limpiarLista(){
-        manager.eliminarProductos_Lista(lista);
-        lista.setProductos(new ArrayList<Producto>());
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

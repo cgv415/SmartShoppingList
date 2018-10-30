@@ -47,4 +47,32 @@ public class Conjunto {
     public void setProductos(ArrayList<Producto> productos) {
         this.productos = productos;
     }
+
+    public ArrayList<String> getNombreProductos(){
+        ArrayList<String> nombres = new ArrayList<>();
+
+        for(Producto p
+                : productos){
+            nombres.add(p.getNombre());
+        }
+
+        return nombres;
+    }
+
+    public void insertarProducto(Producto producto){
+        productos.add(producto);
+    }
+
+    public void eliminarProducto(Producto producto){
+        int pos = -1;
+        for(int i = 0 ; i < productos.size() ; i++){
+            Producto p = productos.get(i);
+            if(producto.getNombre().equals(p.getNombre())){
+                pos = i;
+            }
+        }
+        if(pos != -1){
+            productos.remove(pos);
+        }
+    }
 }

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.SubMenu;
 import android.view.View;
@@ -21,42 +20,49 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeMap;
 
-public class MainActivity extends AppCompatActivity
+public class Activity_Local extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    ArrayList<String> nombreLocales;
+    ArrayList<Local> locales;
+    Local local;
     DataBaseManager manager;
     AutoCompleteTextView buscador;
 
+    android.widget.ExpandableListAdapter listAdapter;
     ExpandableListView expandableListView;
+
     ArrayList<String> agrupacion;
-    Map<String,ArrayList<String>> map;
+    ArrayList<String> contraidos;
+    Map<String,ArrayList<Producto>> map;
     ArrayList<Producto> productos;
     ArrayList<String> arrayBuscador;
-    ArrayList<String> contraidos;
-    android.widget.ExpandableListAdapter listAdapter;
-    ArrayList<Lista> listas;
+    ArrayList<String> nombreCategorias;
+    ArrayList<String> nombresSubcategorias;
+
+    EditText etNombre;
+    EditText etDescripcion;
+    EditText etEtiqueta;
+    EditText etPrecio;
+    EditText etMarca;
 
     Spinner spTipo;
-
-    Lista lista;
+    Spinner spCategoria;
+    Spinner spSubcategoria;
 
     String agruparPor = "categoria";
-    TreeMap<String,ArrayList<String>> tachados = new TreeMap<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,21 +72,22 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         manager = new DataBaseManager(this);
-        manager.actualizar();
-
+        try{
+            local = manager.obtenerLocales().get(0);
+            setTitle(local.getNombre());
+        }catch (Exception e){
+            local = new Local();
+            local.setNombre("");
+            local.setProductos(new ArrayList<Producto>());
+            setTitle("Conjuntos");
+        }
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(lista.getNombre().equals("")){
-                    popUpInsertarLista();
-                }else{
-                    popUpInsertarProductoEnLista();
-                }
-
+                popUpInsertarProductoEnLocal();
             }
         });
-
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -92,23 +99,11 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         Menu menu = navigationView.getMenu();
-        MenuItem item = menu.findItem(R.id.nav_principal);
+        MenuItem item = menu.findItem(R.id.nav_locales);
         item.setChecked(true);
 
-        if(getIntent().hasExtra("lista")){
-            String nombreLista = getIntent().getStringExtra("lista");
-            lista = manager.obtenerListaByNombre(nombreLista);
-        }else{
-            lista = manager.obtenerListaPrincipal();
-        }
-
-        if(lista.getNombre().equals("")){
-            popUpInsertarLista();
-        }else{
-            this.setTitle(lista.getNombre());
-        }
-
         contraidos = new ArrayList<>();
+        nombreLocales = manager.obtenerNombreLocales();
 
 
         spTipo = findViewById(R.id.sp_tipo);
@@ -127,7 +122,7 @@ public class MainActivity extends AppCompatActivity
                 String tipo = spTipo.getSelectedItem().toString();
                 switch (tipo) {
                     case "producto": {
-                        arrayBuscador = lista.getNombreProductos();
+                        arrayBuscador = manager.obtenerNombreProductos();
                         ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
                                 android.R.layout.simple_dropdown_item_1line, arrayBuscador);
                         buscador.setAdapter(adapter);
@@ -168,79 +163,17 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onChildClick(ExpandableListView expandableListView, View view, int groupPosition, int childPosition, long l) {
                 Toast.makeText(getApplicationContext(), agrupacion.get(groupPosition)+ ":" + map.get(agrupacion.get(groupPosition)).get(childPosition),Toast.LENGTH_SHORT).show();
-
-                TextView texto = view.findViewById(R.id.tvChild);
-
-                String key = agrupacion.get(groupPosition);
-
-                ArrayList<String> valueTachados;
-                ArrayList<String> valueMap;
-
-                if(tachados.containsKey(key)){
-                    valueTachados = tachados.get(key);
-                    if(valueTachados.contains(texto.getText().toString())){
-                        valueTachados.remove(texto.getText().toString());
-                    }else{
-                        valueTachados.add(texto.getText().toString());
-                    }
-                }else{
-                    valueTachados = new ArrayList<>();
-                    valueTachados.add(texto.getText().toString());
-                }
-                tachados.put(key,valueTachados);
-
-
-                if(valueTachados.contains(texto.getText().toString())){
-                    valueMap = map.get(key);
-                    valueMap.remove(texto.getText().toString());
-                    valueMap.add(texto.getText().toString());
-                }else{
-                    valueMap = map.get(key);
-                    Collections.sort(valueMap);
-                }
-                map.put(key,valueMap);
-
-                actualizarAdapter();
-
-
+                Producto producto = map.get(agrupacion.get(groupPosition)).get(childPosition);
+                popUpModificarProducto(producto);
                 return false;
             }
         });
 
-        expandableListView.setOnGroupCollapseListener(new ExpandableListView.OnGroupCollapseListener() {
-            @Override
-            public void onGroupCollapse(int i) {
-                contraidos.add(agrupacion.get(i));
-            }
-        });
-
-        expandableListView.setOnGroupExpandListener(new ExpandableListView.OnGroupExpandListener() {
-            @Override
-            public void onGroupExpand(int i) {
-                contraidos.remove(agrupacion.get(i));
-            }
-        });
-
-        expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if (ExpandableListView.getPackedPositionType(l) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
-                    //Quitar de la lista
-
-                    String nombreproducto = expandableListView.getItemAtPosition(i).toString();
-                    Producto producto = manager.obtenerProductoByNombre(nombreproducto);
-                    popUpEliminarDeLista(producto);
-
-
-                }
-                return true;
-            }
-        });
         buscador = findViewById(R.id.ac_productos);
 
         actualizarLista();
 
-        arrayBuscador = lista.getNombreProductos();
+        arrayBuscador = manager.obtenerNombreProductos();
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, arrayBuscador);
         buscador.setAdapter(adapter);
@@ -263,11 +196,11 @@ public class MainActivity extends AppCompatActivity
                 if(charSequence.equals("")){
                     actualizarLista();
                 }else {
-                    Set<Map.Entry<String, ArrayList<String>>> entrySet = map.entrySet();
-                    for (Map.Entry<String, ArrayList<String>> entry : entrySet) {
-                        ArrayList<String> nombresProductos = entry.getValue();
+                    Set<Map.Entry<String, ArrayList<Producto>>> entrySet = map.entrySet();
+                    for (Map.Entry<String, ArrayList<Producto>> entry : entrySet) {
+                        ArrayList<Producto> nombresProductos = entry.getValue();
                         for (int j = 0; j < nombresProductos.size(); j++) {
-                            Producto producto = manager.obtenerProductoByNombre(nombresProductos.get(j));
+                            Producto producto = manager.obtenerProductoByNombre(nombresProductos.get(j).getNombre());
                             switch (tipo) {
                                 case "categoria":
                                     if (producto.getCategoria().getNombre().contains(charSequence)) {
@@ -316,7 +249,7 @@ public class MainActivity extends AppCompatActivity
                         }
                     }
 
-                    listAdapter = new ExpandableListAdapter(getApplicationContext(), agrupacionAux,mapAux,tachados);
+                    //listAdapter = new AdapterLocal(getApplicationContext(), agrupacionAux,mapAux);
                     expandableListView.setAdapter(listAdapter);
 
                     for(int j = 0; j < agrupacionAux.size() ; j ++){
@@ -331,182 +264,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-    }
-
-    public void popUpInsertarLista(){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-
-        final View v = inflater.inflate(R.layout.popup_insertar_lista, null);
-
-
-        final EditText etNombre = v.findViewById(R.id.et_nombre_lista);
-        final EditText etDescripcion = v.findViewById(R.id.et_descripcion);
-        final CheckBox cbPrincipal = v.findViewById(R.id.cb_principal);
-
-        builder.setTitle("Crea tu primera Lista");
-        builder.setView(v);
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                lista.setNombre(etNombre.getText().toString());
-                lista.setDescripcion(etDescripcion.getText().toString());
-                lista.setPrincipal(true);
-
-                long idLista = manager.insertarLista(lista);
-                lista.setId(String.valueOf(idLista));
-
-                setTitle(lista.getNombre());
-                actualizarLista();
-
-            }
-        })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
-    }
-
-    public void popUpModificar(final Lista lista){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        LayoutInflater inflater = getLayoutInflater();
-
-        final View v = inflater.inflate(R.layout.popup_insertar_lista, null);
-
-
-        final EditText etNombre = v.findViewById(R.id.et_nombre_lista);
-        final EditText etDescripcion = v.findViewById(R.id.et_descripcion);
-        final CheckBox cbPrincipal = v.findViewById(R.id.cb_principal);
-
-        etNombre.setText(lista.getNombre());
-        etDescripcion.setText(lista.getDescripcion());
-        cbPrincipal.setChecked(lista.isPrincipal());
-
-        builder.setTitle("Modificar Lista");
-        builder.setView(v);
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                int pos = listas.indexOf(lista.getNombre());
-                lista.setNombre(etNombre.getText().toString());
-                lista.setDescripcion(etDescripcion.getText().toString());
-                if(listas.size()==0){
-                    lista.setPrincipal(true);
-                }else{
-                    lista.setPrincipal(cbPrincipal.isChecked());
-                }
-
-                manager.modificarLista(lista);
-
-                //listas.set(pos,lista);
-                setTitle(lista.getNombre());
-
-            }
-        })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
-    }
-
-    public void popUpEliminar(final Lista lista){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setTitle("Eliminar Lista");
-        builder.setMessage("¿Desea eliminar la lista '" + lista.getNombre() + "' y todos sus productos?");
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                manager.eliminarLista(lista);
-
-            }
-        })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
-    }
-
-    public void popUpInsertarProductoEnLista(){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Insertar en lista");
-        LayoutInflater inflater = getLayoutInflater();
-
-        final View v = inflater.inflate(R.layout.popup_insertar_en_lista, null);
-
-        final MultiAutoCompleteTextView buscadorInsertar = v.findViewById(R.id.atv_buscador);
-        builder.setView(v);
-
-        final ArrayList<String> nombresProductos = manager.obtenerNombreProductos();
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, nombresProductos);
-        buscadorInsertar.setAdapter(adapter);
-
-        buscadorInsertar.setThreshold(1);
-        buscadorInsertar.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
-
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Toast.makeText(getApplicationContext(),buscadorInsertar.getText().toString(),Toast.LENGTH_LONG).show();
-
-                        StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),",");
-                        while(tokenizer.hasMoreTokens()){
-                            String token = tokenizer.nextToken();
-                            Producto producto = manager.obtenerProductoByNombre(token);
-                            manager.insertarProducto_Lista(producto,lista);
-                        }
-                        actualizarLista();
-                        Toast.makeText(getApplicationContext(),"Productos insertados con exito!",Toast.LENGTH_LONG).show();
-
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
-    }
-
-    public void popUpEliminarDeLista(final Producto producto){
-
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setTitle("Eliminar producto");
-        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "' de la lista?");
-
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                manager.eliminarProducto_Lista(producto,lista);
-                actualizarLista();
-            }
-        })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
-    }
-
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
     }
 
     public void actualizarLista(){
@@ -525,17 +282,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void actualizarListaPorOrden(){
-        productos = lista.getProductos();
+        productos = local.getProductos();
         agrupacion = new ArrayList<>();
         map = new TreeMap<>();
 
         for(int i = 0 ; i < productos.size() ; i ++){
-            String producto = productos.get(i).getNombre();
-            String letter = String.valueOf(producto.charAt(0));
+            Producto producto = productos.get(i);
+            String letter = String.valueOf(producto.getNombre().charAt(0));
             if(!agrupacion.contains(letter)){
                 agrupacion.add(letter);
             }
-            ArrayList<String> p = new ArrayList<>();
+            ArrayList<Producto> p = new ArrayList<>();
             if(map.containsKey(letter)){
                 p  = map.get(letter);
             }
@@ -547,7 +304,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void actualizarListaPorEtiqueta(){
-        productos = lista.getProductos();
+        productos = local.getProductos();
         agrupacion = new ArrayList<>();
         map = new TreeMap<>();
 
@@ -556,11 +313,11 @@ public class MainActivity extends AppCompatActivity
             if(!agrupacion.contains(etiqueta)){
                 agrupacion.add(etiqueta);
             }
-            ArrayList<String> p = new ArrayList<>();
+            ArrayList<Producto> p = new ArrayList<>();
             if(map.containsKey(etiqueta)){
                 p  = map.get(etiqueta);
             }
-            p.add(productos.get(i).getNombre());
+            p.add(productos.get(i));
             map.put(etiqueta,p);
         }
 
@@ -568,77 +325,270 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void actualizarListaPorCategoria(){
-
-        productos = lista.getProductos();
+        productos = local.getProductos();
         agrupacion = new ArrayList<>();
         map = new TreeMap<>();
 
         for(int i = 0 ; i < productos.size() ; i ++){
-
-                Categoria categoria = productos.get(i).getCategoria();
-                if(!agrupacion.contains(categoria.getNombre())){
-                    agrupacion.add(categoria.getNombre());
-                }
-                Collections.sort(agrupacion);
-
-                ArrayList<String> p = new ArrayList<>();
-
-                if(map.containsKey(categoria.getNombre())){
-                    p  = map.get(categoria.getNombre());
-                }
-                p.add(productos.get(i).getNombre());
-                map.put(categoria.getNombre(),p);
+            Categoria categoria = productos.get(i).getCategoria();
+            if(!agrupacion.contains(categoria.getNombre())){
+                agrupacion.add(categoria.getNombre());
+            }
+            Collections.sort(agrupacion);
+            ArrayList<Producto> p = new ArrayList<>();
+            if(map.containsKey(categoria.getNombre())){
+                p  = map.get(categoria.getNombre());
+            }
+            p.add(productos.get(i));
+            map.put(categoria.getNombre(),p);
         }
 
         actualizarAdapter();
     }
 
     public void actualizarAdapter(){
-        listAdapter = new ExpandableListAdapter(this, agrupacion,map,tachados);
+        listAdapter = new AdapterLocal(this, agrupacion,map);
         expandableListView.setAdapter(listAdapter);
 
-
         for(int j = 0; j < agrupacion.size() ; j ++){
-            if(!contraidos.contains(agrupacion.get(j))){
-                expandableListView.expandGroup(j);
+            expandableListView.expandGroup(j);
+        }
+    }
+
+    public void popUpInsertarLocal(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_insertar_conjunto, null);
+
+
+        final EditText etNombre = v.findViewById(R.id.et_nombre_conjunto);
+        final EditText etDescripcion = v.findViewById(R.id.et_descripcion_conjunto);
+
+        builder.setTitle("Crear local");
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Local local = new Local();
+                local.setNombre(etNombre.getText().toString());
+                //conjunto.setDescripcion(etDescripcion.getText().toString());
+
+                long idConjunto = manager.insertarLocal(local);
+                nombreLocales.add(local.getNombre());
+
             }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpModificarLocal(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_productos_conjuntos, null);
+
+        final EditText etNombre = v.findViewById(R.id.et_nombre);
+        final EditText etDescripcion = v.findViewById(R.id.et_descripcion);
+
+
+        etNombre.setText(local.getNombre());
+
+        builder.setTitle("Modificar local");
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Conjunto conjunto = new Conjunto();
+                local.setNombre(etNombre.getText().toString());
+                manager.modificarLocal(local);
+                setTitle(local.getNombre());
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpInsertarProductoEnLocal(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_insertar_en_local, null);
+
+        final AutoCompleteTextView buscador2 = v.findViewById(R.id.atv_producto);
+
+        ArrayList<String> arrayBuscador2 = manager.obtenerNombreProductos();
+        ArrayAdapter<String> adapter2 = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, arrayBuscador2);
+        buscador2.setAdapter(adapter2);
+        buscador2.setThreshold(1);
+
+        final EditText etPrecio = v.findViewById(R.id.et_precio);
+
+        builder.setTitle("Insertar producto en local");
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                try{
+                    Producto producto = manager.obtenerProductoByNombre(buscador2.getText().toString());
+                    Double precio = Double.parseDouble(etPrecio.getText().toString());
+                    producto.setPrecioLocal(precio);
+                    manager.insertarProducto_Local(producto,local,precio);
+                    productos.add(producto);
+                    local.setProductos(productos);
+                    actualizarLista();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpModificarProducto(final Producto producto){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_modificar_en_local, null);
+
+        final AutoCompleteTextView buscador2 = v.findViewById(R.id.atv_producto);
+        final EditText etPrecio = v.findViewById(R.id.et_precio);
+
+        buscador2.setText(producto.getNombre());
+        buscador2.setEnabled(false);
+
+        etPrecio.setText(producto.getPrecioLocal().toString());
+
+        builder.setTitle("Modificar precio producto");
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Double precio = Double.parseDouble(etPrecio.getText().toString());
+                producto.setPrecioLocal(precio);
+                manager.modificarProducto_Local(producto,local,precio);
+
+                int pos = productos.indexOf(producto);
+                productos.set(pos,producto);
+                local.setProductos(productos);
+                actualizarLista();
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                })
+                .setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        popUpEliminarProductoDeLocal(producto);
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpEliminarProductoDeLocal(final Producto producto){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Eliminar Local");
+        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "' del local?");
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                manager.eliminarProducto_Local(producto, local);
+                productos.remove(producto);
+                local.setProductos(productos);
+
+                actualizarLista();
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpEliminarLocal(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Eliminar Local");
+        builder.setMessage("¿Desea eliminar el local '" + local.getNombre() + "' y todos sus productos?");
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                manager.eliminarLocal(local);
+
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         //action_search
 
-        listas = manager.obtenerListas();
+        locales = manager.obtenerLocales();
 
         MenuItem item = menu.findItem(R.id.action_listas);
 
         SubMenu submenu = item.getSubMenu();
 
-        for(int i = 0 ; i < listas.size(); i++){
-            String nombre = listas.get(i).getNombre();
-            int id = Integer.parseInt(listas.get(i).getId());
+        for(int i = 0 ; i < locales.size(); i++){
+            String nombre = locales.get(i).getNombre();
+            int id = Integer.parseInt(locales.get(i).getId());
             submenu.add(1,id,id,nombre);
         }
 
         return true;
     }
 
+    public void limpiarLocal(){
+        manager.eliminarProductos_Local(local);
+        local.setProductos(new ArrayList<Producto>());
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-
         int group = item.getGroupId();
         contraidos.clear();
 
         if(group == 1){
             int id = item.getItemId();
-            lista = manager.obtenerListaById(String.valueOf(id));
-            setTitle(lista.getNombre());
+            local = manager.obtenerLocalById(String.valueOf(id));
+            setTitle(local.getNombre());
         }else {
             switch (item.getItemId()) {
                 case R.id.a_z:
@@ -653,16 +603,16 @@ public class MainActivity extends AppCompatActivity
                 case R.id.action_listas:
                     break;
                 case R.id.action_add:
-                    popUpInsertarLista();
+                    popUpInsertarLocal();
                     break;
                 case R.id.action_edit:
-                    popUpModificar(lista);
+                    popUpModificarLocal();
                     break;
                 case R.id.action_eliminar:
-                    popUpEliminar(lista);
+                    popUpEliminarLocal();
                     break;
                 case R.id.action_limpiar:
-                    limpiarLista();
+                    limpiarLocal();
                     break;
                 default:
 
@@ -673,11 +623,6 @@ public class MainActivity extends AppCompatActivity
         actualizarLista();
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void limpiarLista(){
-        manager.eliminarProductos_Lista(lista);
-        lista.setProductos(new ArrayList<Producto>());
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

@@ -9,10 +9,6 @@
             android:icon="@drawable/ic_principal_manage"
             android:title="Principal" />
         <item
-            android:id="@+id/nav_listas"
-            android:icon="@drawable/ic_listas_manage"
-            android:title="Listas" />
-        <item
             android:id="@+id/nav_productos"
             android:icon="@drawable/ic_productos_manage"
             android:title="Productos" />

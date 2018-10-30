@@ -4,6 +4,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by Carlos on 03/09/2018.
@@ -20,11 +21,12 @@ public interface Database {
 
     ArrayList<Producto> obtenerProductos();
     ArrayList<Producto> obtenerProductosByCategoria(Categoria categoria);
-    ArrayList<Producto> obtenerProductosByLocal(Local local);
+   // ArrayList<Producto> obtenerProductosByLocal(Local local);
 
     Producto obtenerProductoByNombre(String nombre);
     Producto obtenerProductoById(String id);
     ArrayList<String> obtenerNombreProductos();
+    TreeMap<String,String> obtenerLocales_Producto(String nombre);
 
     boolean modificarProducto(Producto producto);
 
@@ -72,15 +74,15 @@ public interface Database {
             /*PRODUCTO_LOCAL*/
     void crearTablaProducto_Local();
 
-    long insertarProducto_Local(Producto producto, Local local);
+    long insertarProducto_Local(Producto producto, Local local, Double precio);
 
-    Map<Local,Producto> obtenerLocales_Productos();
+    Map<String,ArrayList<Producto>> obtenerLocales_Productos();
     ArrayList<Producto> obtenerLocal_Productos(Local local);
     Local obtenerLocal(String nombre);
 
-    boolean modificarProducto_Local(String id, Producto producto, Local local);
+    boolean modificarProducto_Local(Producto producto, Local local, Double precio);
 
-    boolean eliminarProducto_Local(Producto producto);
+    boolean eliminarProducto_Local(Producto producto,Local local);
     boolean eliminarProductos_Local(Local local);
 
 
@@ -133,7 +135,10 @@ public interface Database {
     long insertarLista(Lista lista);
 
     ArrayList<Lista> obtenerListas();
+    ArrayList<String> obtenerNombreListas();
     Lista obtenerListaById(String id);
+    Lista obtenerListaByNombre(String nombre);
+    Lista obtenerListaPrincipal();
 
     boolean modificarLista(Lista lista);
 
@@ -144,6 +149,7 @@ public interface Database {
     void crearTablaProducto_Lista();
 
     long insertarProducto_Lista(Producto producto, Lista lista);
+    long insertarProductos_Lista(Conjunto conjunto, Lista lista);
 
     Map<Lista,Producto> obtenerListas_Productos();
 
@@ -160,7 +166,9 @@ public interface Database {
     long insertarConjunto(Conjunto conjunto);
 
     ArrayList<Conjunto> obtenerConjuntos();
+    ArrayList<String> obtenerNombreConjuntos();
     Conjunto obtenerConjuntoById(String id);
+    Conjunto obtenerConjuntoByNombre(String nombre);
 
     boolean modificarConjunto(Conjunto conjunto);
 

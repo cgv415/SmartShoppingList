@@ -15,6 +15,7 @@ public class Producto implements Comparable<Producto>,Parcelable{
     private String marca;
     private Double precio;
     //¿?
+    private Double precioLocal;
 
 
     public Producto() {
@@ -48,6 +49,14 @@ public class Producto implements Comparable<Producto>,Parcelable{
             return new Producto[size];
         }
     };
+
+    public Double getPrecioLocal() {
+        return precioLocal;
+    }
+
+    public void setPrecioLocal(Double precioLocal) {
+        this.precioLocal = precioLocal;
+    }
 
     public String getMarca() {
         return marca;
@@ -144,7 +153,6 @@ public class Producto implements Comparable<Producto>,Parcelable{
     public void setPrecio(Double precio) {
         this.precio = precio;
     }
-
 
     @Override
     public int compareTo(@NonNull Producto producto) {

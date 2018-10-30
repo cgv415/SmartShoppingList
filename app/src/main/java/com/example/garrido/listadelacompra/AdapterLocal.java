@@ -1,31 +1,28 @@
 package com.example.garrido.listadelacompra;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Map;
 
-/**
- * Clase generada por Carlos Garrido para la aplicación ComandUal en 12/04/2017
- */
+public class AdapterLocal extends BaseExpandableListAdapter {
 
-public class ExpandableListAdapter extends BaseExpandableListAdapter {
     Context context;
     ArrayList<String> categorias;
-    Map<String,ArrayList<String>> topics;
-    Map<String,ArrayList<String>> tachados;
+    Map<String,ArrayList<Producto>> topics;
 
-    public ExpandableListAdapter(Context context, ArrayList<String> categorias, Map<String, ArrayList<String>> topics, Map<String,ArrayList<String>> tachados) {
+    public AdapterLocal(Context context, ArrayList<String> categorias, Map<String, ArrayList<Producto>> topics) {
         this.context = context;
         this.categorias = categorias;
         this.topics = topics;
-        this.tachados = tachados;
     }
 
     @Override
@@ -45,7 +42,11 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
 
     @Override
     public Object getChild(int groupPosition, int childPosition) {
-        return topics.get(categorias.get(groupPosition)).get(childPosition);
+        return topics.get(categorias.get(groupPosition)).get(childPosition).getNombre();
+    }
+
+    public String getPrecio(int groupPosition, int childPosition) {
+        return String.valueOf(topics.get(categorias.get(groupPosition)).get(childPosition).getPrecioLocal());
     }
 
     @Override
@@ -81,21 +82,13 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
         String topic = (String) getChild(groupPosition,childPosition);
         if(view == null){
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.dropdown_producto,null);
+            view = inflater.inflate(R.layout.dropdown_producto_local,null);
         }
 
         TextView txtChild = view.findViewById(R.id.tvChild);
+        TextView txtPrecio = view.findViewById(R.id.tv_precio);
         txtChild.setText(topic);
-
-        String categoria = categorias.get(groupPosition);
-        if(tachados.size() != 0){
-            ArrayList<String> values = tachados.get(categoria);
-            if(values != null && values.contains(topic)){
-                txtChild.setPaintFlags(txtChild.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
-            }else{
-                txtChild.setPaintFlags(txtChild.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
-            }
-        }
+        txtPrecio.setText(getPrecio(groupPosition,childPosition));
 
         return view;
     }
