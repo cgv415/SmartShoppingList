@@ -2,57 +2,50 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/et_nombre_local"
+    <TextView
+        android:id="@+id/tv_fecha"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/textView2"
         android:layout_alignParentEnd="true"
-        android:ems="10"
-        android:inputType="textPersonName" />
+        android:layout_alignTop="@+id/textView29"
+        android:layout_marginEnd="147dp"
+        android:hint="Fecha"
+        android:onClick="onClick" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/et_hora"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/textView5"
-        android:layout_marginTop="26dp"
-        android:text="@string/nombre_local" />
+        android:layout_alignStart="@+id/tv_fecha"
+        android:layout_marginTop="164dp"
+        android:hint="Hora" />
+
+    <TextView
+        android:id="@+id/textView29"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="22dp"
+        android:layout_marginTop="95dp"
+        android:text="Fecha" />
+
+    <Spinner
+        android:id="@+id/sp_locales"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="22dp"
+        android:spinnerMode="dialog" />
 
     <TextView
         android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_fecha"
-        android:layout_alignStart="@+id/textView6"
-        android:text="@string/fecha" />
-
-    <EditText
-        android:id="@+id/et_fecha"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/et_nombre_local"
-        android:ems="10"
-        android:inputType="textPersonName" />
-
-    <TextView
-        android:id="@+id/textView6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_hora"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="27dp"
-        android:text="@string/hora" />
-
-    <EditText
-        android:id="@+id/et_hora"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/et_fecha"
-        android:ems="10"
-        android:inputType="textPersonName" />
+        android:layout_alignStart="@+id/textView29"
+        android:layout_alignTop="@+id/et_hora"
+        android:text="Hora" />
 
 </RelativeLayout>

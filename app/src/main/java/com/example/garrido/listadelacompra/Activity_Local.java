@@ -442,7 +442,7 @@ public class Activity_Local extends AppCompatActivity
                 try{
                     Producto producto = manager.obtenerProductoByNombre(buscador2.getText().toString());
                     Double precio = Double.parseDouble(etPrecio.getText().toString());
-                    producto.setPrecioLocal(precio);
+                    producto.setPrecio(precio);
                     manager.insertarProducto_Local(producto,local,precio);
                     productos.add(producto);
                     local.setProductos(productos);
@@ -474,14 +474,14 @@ public class Activity_Local extends AppCompatActivity
         buscador2.setText(producto.getNombre());
         buscador2.setEnabled(false);
 
-        etPrecio.setText(producto.getPrecioLocal().toString());
+        etPrecio.setText(producto.getPrecio().toString());
 
         builder.setTitle("Modificar precio producto");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 Double precio = Double.parseDouble(etPrecio.getText().toString());
-                producto.setPrecioLocal(precio);
+                producto.setPrecio(precio);
                 manager.modificarProducto_Local(producto,local,precio);
 
                 int pos = productos.indexOf(producto);

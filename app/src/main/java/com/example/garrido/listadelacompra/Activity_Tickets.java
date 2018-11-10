@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,12 +32,12 @@ public class Activity_Tickets extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity__tickets);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         manager = new DataBaseManager(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -51,13 +52,13 @@ public class Activity_Tickets extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         Menu menu = navigationView.getMenu();
@@ -73,22 +74,51 @@ public class Activity_Tickets extends AppCompatActivity
             list.add(local.getNombre() + "," + ticket.getFecha() + "," + ticket.getHora());
         }
 
-        ArrayAdapter adaptador = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list);
-
+        //TODO Adaptador
+        //ArrayAdapter adaptador = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list);
+        AdapterTicket adaptador = new AdapterTicket(this,tickets);
         lista.setAdapter(adaptador);
 
         lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //Toast.makeText(getApplicationContext(),"Ticket seleccionado",Toast.LENGTH_LONG).show();
-                ArrayList<Producto> productos = manager.obtenerFacts(tickets.get(i).getIdTicket());
-
                 Intent intent = new Intent(getApplicationContext(),OCR.class);
                 intent.putExtra("status",1);
                 intent.putExtra("idTicket",tickets.get(i).getIdTicket());
                 startActivity(intent);
             }
         });
+
+        lista.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Ticket t = tickets.get(i);
+                popUpEliminarTicket(t);
+                return false;
+            }
+        });
+    }
+
+    public void popUpEliminarTicket(final Ticket ticket){
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Eliminar ticket");
+        builder.setMessage("¿Desea eliminar el ticket '" + ticket.getLocal().getNombre() + "'?");
+
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //manager.eliminarProducto(producto);
+
+                //actualizarLista();
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
     }
 
     public void popUp() {
@@ -108,7 +138,10 @@ public class Activity_Tickets extends AppCompatActivity
                     intent.putExtra(OcrCaptureActivity.UseFlash, false);
                     startActivity(intent);
                 }else{
-
+                    Intent intent = new Intent(getApplicationContext(),OCR.class);
+                    intent.putExtra("status",1);
+                    intent.putExtra("idTicket","0");
+                    startActivity(intent);
                 }
             }
         });
@@ -117,7 +150,7 @@ public class Activity_Tickets extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -149,7 +182,7 @@ public class Activity_Tickets extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         finish();
 
         manager.gestionarMenu(item,this);

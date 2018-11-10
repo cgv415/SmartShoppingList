@@ -4,10 +4,20 @@ public class Fact {
     private String id;
     private String idTicket;
     private String idProducto;
+    private double precio;
 
-    public Fact(String idTicket, String idProducto) {
+    public Fact(String idTicket, String idProducto,double precio) {
         this.idTicket = idTicket;
         this.idProducto = idProducto;
+        this.precio = precio;
+    }
+
+    public double getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(double precio) {
+        this.precio = precio;
     }
 
     public String getId() {

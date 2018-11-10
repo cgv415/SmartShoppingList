@@ -22,7 +22,6 @@ public interface Database {
     ArrayList<Producto> obtenerProductos();
     ArrayList<Producto> obtenerProductosByCategoria(Categoria categoria);
    // ArrayList<Producto> obtenerProductosByLocal(Local local);
-
     Producto obtenerProductoByNombre(String nombre);
     Producto obtenerProductoById(String id);
     ArrayList<String> obtenerNombreProductos();
@@ -79,6 +78,7 @@ public interface Database {
     Map<String,ArrayList<Producto>> obtenerLocales_Productos();
     ArrayList<Producto> obtenerLocal_Productos(Local local);
     Local obtenerLocal(String nombre);
+    double obtenerProducto_Precio(Local local,Producto pro);
 
     boolean modificarProducto_Local(Producto producto, Local local, Double precio);
 
@@ -198,7 +198,9 @@ public interface Database {
     Ticket obtenerTicket(String id);
     Ticket obtenerProductos_Ticket(Ticket ticket);
 
+    boolean modificarTicket(Ticket ticket);
     boolean eliminarTicket(Ticket ticket);
+    boolean eliminarTicketById(String idTicket);
 
     /*FACT*/
     void crearTablaFact();

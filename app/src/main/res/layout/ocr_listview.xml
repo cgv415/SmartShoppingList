@@ -10,6 +10,7 @@
         android:layout_alignParentTop="true"
         android:layout_marginEnd="9dp"
         android:layout_toStartOf="@+id/et_precio"
+        android:clickable="false"
         android:hint="producto" />
 
     <TextView

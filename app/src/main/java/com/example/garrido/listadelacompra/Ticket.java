@@ -4,21 +4,12 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Ticket {
-    private String id;
     private String idTicket;
     private String fecha;
     private String hora;
     private Local local;
     private double total;
     private ArrayList<Producto> productos;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getIdTicket() {
         return idTicket;

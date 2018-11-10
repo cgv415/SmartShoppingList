@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
@@ -62,10 +63,6 @@ public class Activity_Listas extends AppCompatActivity
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        Menu menu = navigationView.getMenu();
-        final MenuItem item = menu.findItem(R.id.nav_listas);
-        item.setChecked(true);
 
         listas = manager.obtenerNombreListas();
         lista = findViewById(R.id.listview_listas);

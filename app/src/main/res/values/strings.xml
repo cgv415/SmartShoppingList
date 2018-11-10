@@ -19,6 +19,10 @@
     <string name="cancel">CANCELAR</string>
     <string name="delete">ELIMINAR</string>
 
+
+    <string name="insertar_nuevo">Insertar nuevo</string>
+
+
     <string name="error_nombre">El valor nombre no puede estar vacio</string>
     <string name="error_precio">El valor precio debe ser numérico</string>
 
@@ -36,8 +40,8 @@
     <string name="ocr_error">"Error reading text: %1$s"</string>
     <string name="precio_total">"Total a pagar"</string>
 
-    <string name="nombre_producto">"Nombre de Producto"</string>
-    <string name="precio_producto">"Precio de Producto"</string>
+    <string name="nombre_producto">"Producto"</string>
+    <string name="precio_producto">"Precio"</string>
     <string name="nombre_local">"Nombre de Local"</string>
     <string name="fecha">"Fecha"</string>
     <string name="hora">"Hora"</string>

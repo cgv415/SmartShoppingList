@@ -46,7 +46,7 @@ public class AdapterLocal extends BaseExpandableListAdapter {
     }
 
     public String getPrecio(int groupPosition, int childPosition) {
-        return String.valueOf(topics.get(categorias.get(groupPosition)).get(childPosition).getPrecioLocal());
+        return String.valueOf(topics.get(categorias.get(groupPosition)).get(childPosition).getPrecio());
     }
 
     @Override

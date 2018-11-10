@@ -78,6 +78,11 @@ public class DataBaseManager implements Database {
             this.crearTablaProducto_Local();
         }
 
+        //this.crearTablaTicket();
+        //this.crearTablaFact();
+        //this.crearTablaLista();
+        //this.crearTablaProducto_Lista();
+
         /**/
 
 
@@ -351,8 +356,7 @@ public class DataBaseManager implements Database {
             + CN_CATEGORIA + " text,"
             + CN_SUBCATEGORIA + " text,"
             + CN_LOCAL + " text,"
-            + CN_MARCA + " text,"
-            + CN_PRECIO + " real"
+            + CN_MARCA + " text"
             + ");";
 
     private ContentValues generarValoresProducto(Producto producto){
@@ -372,7 +376,6 @@ public class DataBaseManager implements Database {
         }else{
             valores.put(CN_LOCAL,"-1");
         }
-        valores.put(CN_PRECIO,producto.getPrecio());
         return valores;
     }
 
@@ -418,7 +421,7 @@ public class DataBaseManager implements Database {
     }
     @Override
     public ArrayList<Producto> obtenerProductos() {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA,CN_PRECIO};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
         ArrayList<Producto> productos = new ArrayList<>();
         Producto producto;
         Cursor cursor = db.query(TABLE_PRODUCTO,columnas,null,null,null,null,CN_NOMBRE);
@@ -434,7 +437,6 @@ public class DataBaseManager implements Database {
                 producto.setSubcategoria(this.obtenerSubcategoriaById(cursor.getInt(5)+""));
                 producto.setLocal(this.obtenerLocalById(cursor.getInt(6)+""));
                 producto.setMarca(cursor.getString(7));
-                producto.setPrecio(cursor.getDouble(8));
 
                 productos.add(producto);
 
@@ -446,7 +448,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public ArrayList<Producto> obtenerProductosByCategoria(Categoria categoria) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA,CN_PRECIO};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
         ArrayList<Producto> productos = new ArrayList<>();
         Producto producto;
         Cursor cursor = db.query(TABLE_PRODUCTO, columnas, CN_CATEGORIA + " = ?", new String[]{categoria.getNombre()}, null, null, CN_NOMBRE);
@@ -461,7 +463,6 @@ public class DataBaseManager implements Database {
                 producto.setSubcategoria(new Subcategoria(cursor.getString(5)));
                 producto.setLocal(new Local(cursor.getString(6)));
                 producto.setMarca(cursor.getString(7));
-                producto.setPrecio(cursor.getDouble(8));
 
                 productos.add(producto);
             } while (cursor.moveToNext());
@@ -491,7 +492,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public Producto obtenerProductoByNombre(String nombre) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA,CN_PRECIO};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
         Producto producto = new Producto();
         Cursor cursor = db.query(TABLE_PRODUCTO,columnas,CN_NOMBRE+ " = ?",new String[]{nombre},null,null,null);
         if(cursor.moveToFirst()) {
@@ -506,7 +507,6 @@ public class DataBaseManager implements Database {
                 producto.setSubcategoria(subcategoria);
                 producto.setLocal(new Local(cursor.getString(6)));
                 producto.setMarca(cursor.getString(7));
-                producto.setPrecio(cursor.getDouble(8));
 
             } while (cursor.moveToNext());
         }
@@ -516,7 +516,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public Producto obtenerProductoById(String id) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA,CN_PRECIO};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
         Producto producto = new Producto();
         Cursor cursor = db.query(TABLE_PRODUCTO,columnas,CN_ID+ " = ?",new String[]{id},null,null,null);
         if(cursor.moveToFirst()) {
@@ -531,7 +531,6 @@ public class DataBaseManager implements Database {
                 producto.setSubcategoria(obtenerSubcategoriaById(idSubcategoria));
                 producto.setLocal(new Local(cursor.getString(6)));
                 producto.setMarca(cursor.getString(7));
-                producto.setPrecio(cursor.getDouble(8));
 
             } while (cursor.moveToNext());
         }
@@ -984,14 +983,19 @@ public class DataBaseManager implements Database {
     public ArrayList<Subcategoria> obtenerSubcategorias_Categoria(Categoria categoria) {
         String[] columnas = new String[] {CN_ID,CN_IDCATEGORIA,CN_IDSUBCATEGORIA};
         ArrayList<Subcategoria> subcategorias = new ArrayList<>();
-        Cursor cursor = db.query(TABLE_CATEGORIA_SUBCATEGORIA, columnas, CN_IDCATEGORIA + " = ?", new String[]{categoria.getId()}, null, null, CN_IDSUBCATEGORIA);
-        if(cursor.moveToFirst()) {
-            do {
-                Subcategoria subcategoria = this.obtenerSubcategoriaById(cursor.getString(2));
-                subcategorias.add(subcategoria);
-            } while (cursor.moveToNext());
+        try{
+            Cursor cursor = db.query(TABLE_CATEGORIA_SUBCATEGORIA, columnas, CN_IDCATEGORIA + " = ?", new String[]{categoria.getId()}, null, null, CN_IDSUBCATEGORIA);
+            if(cursor.moveToFirst()) {
+                do {
+                    Subcategoria subcategoria = this.obtenerSubcategoriaById(cursor.getString(2));
+                    subcategorias.add(subcategoria);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        cursor.close();
+
         return subcategorias;
     }
 
@@ -1069,7 +1073,7 @@ public class DataBaseManager implements Database {
                 ArrayList<Producto> p;
                 Local local = this.obtenerLocalById(cursor.getString(1));
                 Producto producto = this.obtenerProductoById(cursor.getString(2));
-                producto.setPrecioLocal(Double.parseDouble(cursor.getString(3)));
+                producto.setPrecio(Double.parseDouble(cursor.getString(3)));
 
                 if(mapa.containsKey(local.getNombre())){
                     p = mapa.get(local.getNombre());
@@ -1094,13 +1098,28 @@ public class DataBaseManager implements Database {
             do {
                 String id = cursor.getString(2);
                 Producto producto = this.obtenerProductoById(id);
-                producto.setPrecioLocal(Double.parseDouble(cursor.getString(3)));
+                producto.setPrecio(Double.parseDouble(cursor.getString(3)));
                 productos.add(producto);
 
             } while (cursor.moveToNext());
         }
         cursor.close();
         return productos;
+    }
+
+    @Override
+    public double obtenerProducto_Precio(Local local,Producto pro) {
+        String[] columnas = new String[] {CN_ID,CN_IDLOCAL,CN_IDPRODUCTO,CN_PRECIO};
+        double precio = 0.0;
+        Cursor cursor = db.query(TABLE_PRODUCTO_LOCAL, columnas, CN_IDLOCAL + " = ? AND " + CN_IDPRODUCTO + " = ?", new String[]{local.getId(),pro.getId()}, null, null, CN_IDLOCAL);
+        if(cursor.moveToFirst()) {
+            do {
+                precio = Double.parseDouble(cursor.getString(3));
+
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return precio;
     }
 
     @Override
@@ -1722,7 +1741,6 @@ public class DataBaseManager implements Database {
 
     private static final String CREATE_TABLE_TICKET = "create table " + TABLE_TICKET + "("
             + CN_ID + " integer primary key autoincrement,"
-            + CN_IDTICKET + " text not null,"
             + CN_FECHA + " text,"
             + CN_HORA + " text,"
             + CN_LOCAL + " text,"
@@ -1732,7 +1750,6 @@ public class DataBaseManager implements Database {
     private ContentValues generarValoresTicket(Ticket ticket){
         /*Habra que hacer un if x!= null {val.put(CN_X,x)}*/
         ContentValues valores = new ContentValues();
-        valores.put(CN_IDTICKET, ticket.getIdTicket());
         valores.put(CN_FECHA, ticket.getFecha());
         valores.put(CN_HORA,ticket.getHora());
         valores.put(CN_TOTAL, ticket.getTotal());
@@ -1754,6 +1771,7 @@ public class DataBaseManager implements Database {
     @Override
     public long insertarTicket(Ticket ticket) {
         long id = db.insert(TABLE_TICKET, null, generarValoresTicket(ticket));
+        ticket.setIdTicket(String.valueOf(id));
         insertarFacts(ticket);
 
         return id;
@@ -1761,19 +1779,18 @@ public class DataBaseManager implements Database {
 
     @Override
     public ArrayList<Ticket> obtenerTickets() {
-        String[] columnas = new String[] {CN_ID,CN_IDTICKET,CN_FECHA, CN_HORA,CN_LOCAL,CN_TOTAL};
+        String[] columnas = new String[] {CN_ID,CN_FECHA, CN_HORA,CN_LOCAL,CN_TOTAL};
         ArrayList<Ticket> tickets = new ArrayList<>();
         Ticket ticket;
-        Cursor cursor = db.query(TABLE_TICKET,columnas,null,null,null,null,null);
+        Cursor cursor = db.query(TABLE_TICKET,columnas,null,null,null,null,CN_FECHA);
         if(cursor.moveToFirst()) {
             do {
                 ticket = new Ticket();
-                ticket.setId(cursor.getString(0));
-                ticket.setIdTicket(cursor.getString(1));
-                ticket.setFecha(cursor.getString(2));
-                ticket.setHora(cursor.getString(3));
-                ticket.setLocal(obtenerLocalById(cursor.getString(4)));
-                ticket.setTotal(cursor.getFloat(5));
+                ticket.setIdTicket(cursor.getString(0));
+                ticket.setFecha(cursor.getString(1));
+                ticket.setHora(cursor.getString(2));
+                ticket.setLocal(obtenerLocalById(cursor.getString(3)));
+                ticket.setTotal(cursor.getFloat(4));
 
                 tickets.add(ticket);
 
@@ -1786,18 +1803,18 @@ public class DataBaseManager implements Database {
 
     @Override
     public Ticket obtenerTicket(String id) {
-        String[] columnas = new String[] {CN_ID,CN_IDTICKET,CN_FECHA, CN_HORA,CN_LOCAL,CN_TOTAL};
+        String[] columnas = new String[] {CN_ID,CN_FECHA, CN_HORA,CN_LOCAL,CN_TOTAL};
         Ticket ticket = new Ticket();
         Cursor cursor = db.query(TABLE_TICKET,columnas,CN_ID+ " = ?",new String[]{id},null,null,null);
         if(cursor.moveToFirst()) {
             do {
-                ticket.setId(cursor.getString(0));
-                ticket.setIdTicket(cursor.getString(1));
-                ticket.setFecha(cursor.getString(2));
-                ticket.setHora(cursor.getString(3));
-                ticket.setLocal(obtenerLocalById(cursor.getString(4)));
-                ticket.setTotal(cursor.getFloat(5));
-
+                ticket.setIdTicket(cursor.getString(0));
+                ticket.setFecha(cursor.getString(1));
+                ticket.setHora(cursor.getString(2));
+                ticket.setLocal(obtenerLocalById(cursor.getString(3)));
+                ticket.setTotal(cursor.getFloat(4));
+                ArrayList<Producto> productos = obtenerFacts(id);
+                ticket.setProductos(productos);
             } while (cursor.moveToNext());
 
         }
@@ -1807,18 +1824,36 @@ public class DataBaseManager implements Database {
 
     @Override
     public Ticket obtenerProductos_Ticket(Ticket ticket) {
-        String[] columnas = new String[] {CN_ID,CN_IDTICKET,CN_FECHA, CN_HORA,CN_LOCAL,CN_TOTAL};
+        String[] columnas = new String[] {CN_ID,CN_FECHA, CN_HORA,CN_LOCAL,CN_TOTAL};
         ArrayList<Producto> productos;
-        Cursor cursor = db.query(TABLE_TICKET, columnas,CN_ID + "=?", new String[]{ticket.getId()}, null, null, null);
+        Cursor cursor = db.query(TABLE_TICKET, columnas,CN_ID + "=?", new String[]{ticket.getIdTicket()}, null, null, null);
         productos = obtenerFacts(ticket.getIdTicket());
         ticket.setProductos(productos);
         cursor.close();
         return ticket;
     }
 
+    @Override
+    public boolean modificarTicket(Ticket ticket) {
+        ContentValues values = generarValoresTicket(ticket);
+        eliminarFact(ticket.getIdTicket());
+        insertarFacts(ticket);
+
+        int result = db.update(TABLE_TICKET, values, CN_ID + " = ?", new String[]{ticket.getIdTicket()});
+        return result == 1;
+    }
+
+    @Override
     public boolean eliminarTicket(Ticket ticket){
         db.delete(TABLE_TICKET, CN_IDTICKET + "=?", new String[]{ticket.getIdTicket()});
         eliminarFact(ticket.getIdTicket());
+        return true;
+    }
+
+    @Override
+    public boolean eliminarTicketById(String idTicket){
+        db.delete(TABLE_TICKET, CN_IDTICKET + "=?", new String[]{idTicket});
+        eliminarFact(idTicket);
         return true;
     }
             /*TODO TABLA FACT*/
@@ -1826,7 +1861,8 @@ public class DataBaseManager implements Database {
     private static final String CREATE_TABLE_FACT = "create table " + TABLE_FACT + "("
             + CN_ID + " integer primary key autoincrement,"
             + CN_IDTICKET + " text not null,"
-            + CN_IDPRODUCTO + " text not null"
+            + CN_IDPRODUCTO + " text not null,"
+            + CN_PRECIO + " real"
             + ");";
 
     private ContentValues generarValoresFact(Fact fact){
@@ -1834,6 +1870,7 @@ public class DataBaseManager implements Database {
         ContentValues valores = new ContentValues();
         valores.put(CN_IDTICKET, fact.getIdTicket());
         valores.put(CN_IDPRODUCTO, fact.getIdProducto());
+        valores.put(CN_PRECIO, fact.getPrecio());
 
         return valores;
     }
@@ -1858,7 +1895,7 @@ public class DataBaseManager implements Database {
     public boolean insertarFacts(Ticket ticket) {
         for (Producto producto :
                 ticket.getProductos()) {
-            Fact fact = new Fact(ticket.getIdTicket(),producto.getId());
+            Fact fact = new Fact(ticket.getIdTicket(),producto.getId(),producto.getPrecio());
             db.insert(TABLE_FACT, null, generarValoresFact(fact));
         }
         return true;
@@ -1866,12 +1903,13 @@ public class DataBaseManager implements Database {
 
     @Override
     public ArrayList<Producto> obtenerFacts(String idTicket){
-        String[] columnas = new String[] {CN_ID,CN_IDTICKET,CN_IDPRODUCTO};
+        String[] columnas = new String[] {CN_ID,CN_IDTICKET,CN_IDPRODUCTO,CN_PRECIO};
         ArrayList<Producto> productos = new ArrayList<>();
         Cursor cursor = db.query(TABLE_FACT, columnas,CN_IDTICKET + "=?", new String[]{idTicket}, null, null, null);
         if(cursor.moveToFirst()) {
             do {
                 Producto producto = this.obtenerProductoById(cursor.getString(2));
+                producto.setPrecio(Double.parseDouble(cursor.getString(3)));
                 productos.add(producto);
             } while (cursor.moveToNext());
         }

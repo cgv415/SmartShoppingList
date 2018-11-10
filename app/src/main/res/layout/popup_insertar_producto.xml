@@ -48,55 +48,28 @@
         android:hint="Etiqueta"
         android:inputType="textPersonName" />
 
-    <EditText
-        android:id="@+id/et_precio_producto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/et_alias"
-        android:ems="10"
-        android:hint="precio por defecto"
-        android:inputType="textPersonName|numberDecimal"
-        android:numeric="decimal" />
-
     <Spinner
         android:id="@+id/sp_categoria"
-        android:layout_width="167dp"
+        android:layout_width="217dp"
         android:layout_height="42dp"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/et_descripcion"
-        android:layout_marginEnd="50dp" />
+        android:layout_marginEnd="0dp" />
 
     <Spinner
         android:id="@+id/sp_subcategoria"
-        android:layout_width="167dp"
+        android:layout_width="217dp"
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/sp_categoria"
-        android:layout_marginEnd="50dp" />
-
-    <ImageButton
-        android:id="@+id/bt_categoria"
-        android:layout_width="46dp"
-        android:layout_height="42dp"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/et_descripcion"
-        app:srcCompat="@android:drawable/ic_input_add" />
-
-    <ImageButton
-        android:id="@+id/bt_subcategoria"
-        android:layout_width="46dp"
-        android:layout_height="42dp"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/sp_categoria"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        android:layout_marginEnd="0dp" />
 
     <Button
         android:id="@+id/btn_gestionar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/et_precio_producto"
+        android:layout_below="@+id/et_alias"
         android:text="Comparar Precios" />
 
     <TextView
@@ -139,14 +112,6 @@
         android:layout_alignBottom="@+id/et_alias"
         android:layout_alignStart="@+id/textView16"
         android:text="Etiqueta" />
-
-    <TextView
-        android:id="@+id/textView21"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_precio_producto"
-        android:layout_alignStart="@+id/textView18"
-        android:text="Precio por defecto" />
 
     <TextView
         android:id="@+id/textView24"

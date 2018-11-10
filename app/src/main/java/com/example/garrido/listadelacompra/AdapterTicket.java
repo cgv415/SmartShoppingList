@@ -6,29 +6,31 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
+
+import com.example.garrido.listadelacompra.Producto;
+import com.example.garrido.listadelacompra.R;
+import com.example.garrido.listadelacompra.Ticket;
 
 import java.util.ArrayList;
 
 public class AdapterTicket extends BaseAdapter {
     private Activity activity;
-    private ArrayList<Producto> productos;
+    private ArrayList<Ticket> tickets;
 
-    public AdapterTicket(Activity activity, ArrayList<Producto> productos) {
+    public AdapterTicket(Activity activity, ArrayList<Ticket> tickets) {
         this.activity = activity;
-        this.productos = productos;
+        this.tickets = tickets;
     }
 
     @Override
     public int getCount() {
-        return productos.size();
+        return tickets.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return productos.get(i);
+        return tickets.get(i);
     }
 
     @Override
@@ -42,13 +44,18 @@ public class AdapterTicket extends BaseAdapter {
 
         if(view == null){
             LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.ocr_listview,null);
+            v = inflater.inflate(R.layout.adapter_ticket,null);
         }
-        TextView producto = v.findViewById(R.id.et_producto);
-        TextView precio = v.findViewById(R.id.et_precio);
+        TextView nombre = v.findViewById(R.id.tv_nombre);
+        TextView precio = v.findViewById(R.id.tv_precio);
+        TextView fecha = v.findViewById(R.id.tv_fecha);
+        TextView hora = v.findViewById(R.id.tv_hora);
 
-        producto.setText(productos.get(i).getNombre());
-        precio.setText(productos.get(i).getPrecio().toString());
+        Ticket t = tickets.get(i);
+        nombre.setText(t.getLocal().getNombre());
+        precio.setText(String.format("%.2f",t.getTotal()));
+        fecha.setText(t.getFecha());
+        hora.setText(t.getHora());
 
         return v;
     }
