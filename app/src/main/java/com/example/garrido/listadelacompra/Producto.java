@@ -171,4 +171,15 @@ public class Producto implements Comparable<Producto>,Parcelable{
         parcel.writeString(marca);
         parcel.writeDouble(precio);
     }
+
+    @Override
+    public String toString() {
+        return "'" + nombre + "': {descripcion:'" +
+                descripcion + "',etiqueta: '" +
+                etiqueta + "',categoria: '" +
+                categoria.getNombre() + "',subcategoria: '" +
+                subcategoria.getNombre() + "',marca: '" +
+                marca +
+                "'}";
+    }
 }

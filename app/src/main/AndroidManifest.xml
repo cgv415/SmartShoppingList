@@ -3,6 +3,8 @@
     package="com.example.garrido.listadelacompra">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -48,6 +50,18 @@
         <activity
             android:name=".Activity_Local"
             android:label="@string/title_activity__local"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity_Import"
+            android:label="@string/title_activity__import"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Explorador"
+            android:label="@string/title_activity_explorador"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activity_Reinicio"
+            android:label="@string/title_activity__reinicio"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

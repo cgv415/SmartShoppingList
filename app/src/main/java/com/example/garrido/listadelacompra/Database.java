@@ -59,7 +59,7 @@ public interface Database {
 
             /*SUBCATEGORIAS*/
     void crearTablaSubcategoria();
-    long insertarSubcategoria(Subcategoria subcategoria);
+    long insertarSubcategoria(Subcategoria subcategoria,Categoria categoria);
 
     ArrayList<Subcategoria> obtenerSubcategorias();
     ArrayList<String> obtenerNombreSubcategorias();
@@ -194,7 +194,7 @@ public interface Database {
 
     long insertarTicket(Ticket ticket);
 
-    ArrayList<Ticket> obtenerTickets();
+    ArrayList<Ticket> obtenerTickets(String orden);
     Ticket obtenerTicket(String id);
     Ticket obtenerProductos_Ticket(Ticket ticket);
 

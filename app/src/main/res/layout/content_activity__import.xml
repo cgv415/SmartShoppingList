@@ -6,18 +6,24 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context=".Activity_Tickets"
-    tools:showIn="@layout/app_bar_activity__tickets">
+    tools:context=".Activity_Import"
+    tools:showIn="@layout/app_bar_activity__import">
 
-    <AutoCompleteTextView
-        android:id="@+id/at_tickets"
+    <CheckBox
+        android:id="@+id/cb_selectTodo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Buscador" />
+        android:text="Seleccionar Todo" />
 
     <ListView
-        android:id="@+id/listview_tickets"
+        android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="475dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="10dp"
+        android:choiceMode="multipleChoice">
+
+    </ListView>
 
 </LinearLayout>

@@ -59,6 +59,20 @@ public class Conjunto {
         return nombres;
     }
 
+    public String toStringProductos(){
+        String nombres = "";
+        Producto finProductos = productos.get(productos.size()-1);
+        for(Producto p
+                : productos){
+            nombres += p.toString();
+            if(!finProductos.equals(p)){
+                nombres += ",";
+            }
+        }
+
+        return nombres;
+    }
+
     public void insertarProducto(Producto producto){
         productos.add(producto);
     }
@@ -74,5 +88,13 @@ public class Conjunto {
         if(pos != -1){
             productos.remove(pos);
         }
+    }
+
+    @Override
+    public String toString() {
+        return  "'" + nombre + "': {descripcion:'" +
+                descripcion + "',producto:{" +
+                toStringProductos() + "}" +
+                "}";
     }
 }

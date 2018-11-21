@@ -102,7 +102,7 @@ public class DataBaseManager implements Database {
     }
 
     public void crear(){
-        actualizar();
+        /*actualizar();
         //String nombre, String descripcion, String etiqueta, Categoria categoria, Subcategoria subcategoria, Local local, String marca, float precio
         Categoria categoria = new Categoria("pan");
         insertarCategoria(categoria);
@@ -124,10 +124,6 @@ public class DataBaseManager implements Database {
         insertarCategoria_Subcategoria(bebidas,refrescos);
 
         Local local = new Local("carrefour");
-        local.setNif("A-23425270");
-        local.setDireccion("C/Campezo 16-Poligono Las Mercedes,28022 Madrid");
-        local.setTlfn("902202000");
-        local.setHorario("LUN-SAB, 09:30-22:00");
         insertarLocal(local);
         Local loc = obtenerLocal(local.getNombre());
 
@@ -179,7 +175,7 @@ public class DataBaseManager implements Database {
         ArrayList<Subcategoria> subcategorias = obtenerSubcategorias();
         ArrayList<Local> locales = obtenerLocales();
 
-        ArrayList<Ticket> tickets = this.obtenerTickets();
+        ArrayList<Ticket> tickets = this.obtenerTickets("fecha");
         String idTicket;
         if(tickets.size()>0){
             idTicket  = tickets.get(tickets.size()-1).getIdTicket();
@@ -205,7 +201,7 @@ public class DataBaseManager implements Database {
 
 
         //facts.add(new Fact(idTicket,producto1.));
-
+*/
 /*
         Subcategoria aguas = new Subcategoria("aguas");
         Subcategoria zumos = new Subcategoria("zumos");
@@ -284,8 +280,12 @@ public class DataBaseManager implements Database {
             intent = new Intent(context,Activity_Tickets.class);
         } else if (id == R.id.nav_est) {
             intent = new Intent(context,MainActivity.class);
+        }else if (id == R.id.nav_import) {
+            intent = new Intent(context,Activity_Import.class);
         }else if (id == R.id.nav_faq) {
             intent = new Intent(context,MainActivity.class);
+        }else if (id == R.id.nav_reinicio) {
+            intent = new Intent(context,Activity_Reinicio.class);
         }else{
             intent = new Intent(context,MainActivity.class);
         }
@@ -350,7 +350,7 @@ public class DataBaseManager implements Database {
             /*todo CREACION TABLA PRODUCTO*/
     private static final String CREATE_TABLE_PRODUCTO = "create table " + TABLE_PRODUCTO + "("
             + CN_ID + " integer primary key autoincrement,"
-            + CN_NOMBRE + " text not null,"
+            + CN_NOMBRE + " text not null unique,"
             + CN_DESCRIPCION + " text,"
             + CN_ETIQUETA + " text,"
             + CN_CATEGORIA + " text,"
@@ -572,7 +572,7 @@ public class DataBaseManager implements Database {
 
     private static final String CREATE_TABLE_LOCAL = "create table " + TABLE_LOCAL + "("
             + CN_ID + " integer primary key autoincrement,"
-            + CN_NOMBRE + " text not null,"
+            + CN_NOMBRE + " text not null unique,"
             + CN_DIRECCION + " text,"
             + CN_NIF + " text,"
             + CN_WEB + " text,"
@@ -584,11 +584,6 @@ public class DataBaseManager implements Database {
         /*Habra que hacer un if x!= null {val.put(CN_X,x)}*/
         ContentValues valores = new ContentValues();
         valores.put(CN_NOMBRE, local.getNombre());
-        valores.put(CN_DIRECCION, local.getDireccion());
-        valores.put(CN_HORARIO,local.getHorario());
-        valores.put(CN_NIF, local.getNif());
-        valores.put(CN_TLFN, local.getTlfn());
-        valores.put(CN_WEB, local.getWeb());
         return valores;
     }
 
@@ -610,7 +605,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public ArrayList<Local> obtenerLocales() {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DIRECCION,CN_HORARIO,CN_NIF,CN_TLFN,CN_WEB};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
         ArrayList<Local> locales = new ArrayList<>();
         Local local;
         Cursor cursor = db.query(TABLE_LOCAL,columnas,null,null,null,null,CN_NOMBRE);
@@ -619,11 +614,7 @@ public class DataBaseManager implements Database {
                 local = new Local();
                 local.setId(cursor.getString(0));
                 local.setNombre(cursor.getString(1));
-                local.setDireccion(cursor.getString(2));
-                local.setHorario(cursor.getString(3));
-                local.setNif(cursor.getString(4));
-                local.setTlfn(cursor.getString(5));
-                local.setWeb(cursor.getString(6));
+
                 local.setProductos(obtenerLocal_Productos(local));
                 locales.add(local);
 
@@ -635,18 +626,14 @@ public class DataBaseManager implements Database {
 
     @Override
     public Local obtenerLocalByNombre(String nombre) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DIRECCION,CN_HORARIO,CN_NIF,CN_TLFN,CN_WEB};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
         Local local = new Local();
         Cursor cursor = db.query(TABLE_LOCAL,columnas,CN_NOMBRE+ " = ?",new String[]{nombre},null,null,null);
         if(cursor.moveToFirst()) {
             do {
                 local.setId(cursor.getString(0));
                 local.setNombre(cursor.getString(1));
-                local.setDireccion(cursor.getString(2));
-                local.setHorario(cursor.getString(3));
-                local.setNif(cursor.getString(4));
-                local.setTlfn(cursor.getString(5));
-                local.setWeb(cursor.getString(6));
+
                 local.setProductos(obtenerLocal_Productos(local));
 
             } while (cursor.moveToNext());
@@ -657,18 +644,14 @@ public class DataBaseManager implements Database {
 
     @Override
     public Local obtenerLocalById(String id) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DIRECCION,CN_HORARIO,CN_NIF,CN_TLFN,CN_WEB};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
         Local local = new Local();
         Cursor cursor = db.query(TABLE_LOCAL,columnas,CN_ID+ " = ?",new String[]{id},null,null,null);
         if(cursor.moveToFirst()) {
             do {
                 local.setId(cursor.getString(0));
                 local.setNombre(cursor.getString(1));
-                local.setDireccion(cursor.getString(2));
-                local.setHorario(cursor.getString(3));
-                local.setNif(cursor.getString(4));
-                local.setTlfn(cursor.getString(5));
-                local.setWeb(cursor.getString(6));
+
                 local.setProductos(obtenerLocal_Productos(local));
 
             } while (cursor.moveToNext());
@@ -679,18 +662,13 @@ public class DataBaseManager implements Database {
 
     @Override
     public Local obtenerLocal(String nombre) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DIRECCION,CN_HORARIO,CN_NIF,CN_TLFN,CN_WEB};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
         Local local = new Local();
         Cursor cursor = db.query(TABLE_LOCAL,columnas,CN_NOMBRE+ " = ?",new String[]{nombre},null,null,null);
         if(cursor.moveToFirst()) {
             do {
                 local.setId(cursor.getString(0));
                 local.setNombre(cursor.getString(1));
-                local.setDireccion(cursor.getString(2));
-                local.setHorario(cursor.getString(3));
-                local.setNif(cursor.getString(4));
-                local.setTlfn(cursor.getString(5));
-                local.setWeb(cursor.getString(6));
 
             } while (cursor.moveToNext());
         }
@@ -731,7 +709,7 @@ public class DataBaseManager implements Database {
 
     private static final String CREATE_TABLE_CATEGORIA = "create table " + TABLE_CATEGORIA + "("
             + CN_ID + " integer primary key autoincrement,"
-            + CN_NOMBRE + " text not null"
+            + CN_NOMBRE + " text not null unique"
             + ");";
 
     private ContentValues generarValoresCategoria(Categoria categoria){
@@ -754,7 +732,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public long insertarCategoria(Categoria categoria) {
-        return db.insert(TABLE_CATEGORIA, null, generarValoresCategoria(categoria));
+            return db.insert(TABLE_CATEGORIA, null, generarValoresCategoria(categoria));
     }
 
     @Override
@@ -767,6 +745,8 @@ public class DataBaseManager implements Database {
                 Categoria categoria = new Categoria();
                 categoria.setId(cursor.getInt(0) + "");
                 categoria.setNombre(cursor.getString(1));
+                ArrayList<Subcategoria> subcategorias = obtenerSubcategorias_Categoria(categoria);
+                categoria.setSubcategorias(subcategorias);
                 categorias.add(categoria);
             } while (cursor.moveToNext());
         }
@@ -838,7 +818,7 @@ public class DataBaseManager implements Database {
 
     private static final String CREATE_TABLE_SUBCATEGORIA = "create table " + TABLE_SUBCATEGORIA + "("
             + CN_ID + " integer primary key autoincrement,"
-            + CN_NOMBRE + " text not null"
+            + CN_NOMBRE + " text not null unique"
             + ");";
 
     private ContentValues generarValoresSubcategoria(Subcategoria subcategoria){
@@ -860,8 +840,12 @@ public class DataBaseManager implements Database {
     }
 
     @Override
-    public long insertarSubcategoria(Subcategoria subcategoria) {
+    public long insertarSubcategoria(Subcategoria subcategoria,Categoria categoria) {
+        Subcategoria s = obtenerSubcategoria(subcategoria.getNombre());
+
+        insertarCategoria_Subcategoria(categoria,subcategoria);
         return db.insert(TABLE_SUBCATEGORIA, null, generarValoresSubcategoria(subcategoria));
+
     }
 
     @Override
@@ -1294,7 +1278,7 @@ public class DataBaseManager implements Database {
 
     private static final String CREATE_TABLE_LISTA = "create table " + TABLE_LISTA + "("
             + CN_ID + " integer primary key autoincrement,"
-            + CN_NOMBRE + " text not null,"
+            + CN_NOMBRE + " text not null unique,"
             + CN_DESCRIPCION + " text not null,"
             + CN_PRINCIPAL + " text not null"
             + ");";
@@ -1554,7 +1538,7 @@ public class DataBaseManager implements Database {
 
     private static final String CREATE_TABLE_CONJUNTO = "create table " + TABLE_CONJUNTO + "("
             + CN_ID + " integer primary key autoincrement,"
-            + CN_NOMBRE + " text not null,"
+            + CN_NOMBRE + " text not null unique,"
             + CN_DESCRIPCION + " text not null"
             + ");";
 
@@ -1778,11 +1762,11 @@ public class DataBaseManager implements Database {
     }
 
     @Override
-    public ArrayList<Ticket> obtenerTickets() {
+    public ArrayList<Ticket> obtenerTickets(String orden) {
         String[] columnas = new String[] {CN_ID,CN_FECHA, CN_HORA,CN_LOCAL,CN_TOTAL};
         ArrayList<Ticket> tickets = new ArrayList<>();
         Ticket ticket;
-        Cursor cursor = db.query(TABLE_TICKET,columnas,null,null,null,null,CN_FECHA);
+        Cursor cursor = db.query(TABLE_TICKET,columnas,null,null,null,null,orden);
         if(cursor.moveToFirst()) {
             do {
                 ticket = new Ticket();
@@ -1791,6 +1775,7 @@ public class DataBaseManager implements Database {
                 ticket.setHora(cursor.getString(2));
                 ticket.setLocal(obtenerLocalById(cursor.getString(3)));
                 ticket.setTotal(cursor.getFloat(4));
+                ticket.setProductos(obtenerFacts(ticket.getIdTicket()));
 
                 tickets.add(ticket);
 
@@ -1852,7 +1837,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public boolean eliminarTicketById(String idTicket){
-        db.delete(TABLE_TICKET, CN_IDTICKET + "=?", new String[]{idTicket});
+        db.delete(TABLE_TICKET, CN_ID + "=?", new String[]{idTicket});
         eliminarFact(idTicket);
         return true;
     }

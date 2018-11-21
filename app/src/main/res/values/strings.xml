@@ -11,9 +11,12 @@
 
     <string name="title_activity__tickets">Tickets</string>
     <string name="title_activity_ocrCapture">OCR Capture</string>
-    <string name="title_activity__productos">Gestion de productos</string>
+    <string name="title_activity__productos"></string>
     <string name="title_activity__listas">Administrar Listas</string>
     <string name="title_activity__conjuntos">Administrar Conjuntos</string>
+    <string name="title_activity__local">Activity_Local</string>
+    <string name="title_activity__import"></string>
+    <string name="title_activity_explorador">Explorador</string>
 
     <string name="ok">OK</string>
     <string name="cancel">CANCELAR</string>
@@ -45,6 +48,7 @@
     <string name="nombre_local">"Nombre de Local"</string>
     <string name="fecha">"Fecha"</string>
     <string name="hora">"Hora"</string>
-    <string name="title_activity__local">Activity_Local</string>
+    <string name="title_activity__reinicio">Activity_Reinicio</string>
+
 
 </resources>

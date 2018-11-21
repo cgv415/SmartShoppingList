@@ -55,7 +55,33 @@ public class Ticket {
         return productos;
     }
 
+    public String toStringProductos(){
+        String nombres = "{";
+        Producto finProductos = productos.get(productos.size()-1);
+        for( Producto p
+                : productos){
+            nombres += "'" + p.getNombre() + "':" + p.getPrecio();
+            if(!finProductos.equals(p)){
+                nombres += ",";
+            }
+        }
+        nombres += "}";
+        return nombres;
+    }
+
     public void setProductos(ArrayList<Producto> productos) {
         this.productos = productos;
+    }
+
+
+    @Override
+    public String toString() {
+        return  "'" + fecha + " " + hora + "':" +
+                "{'fecha':'" + fecha + "'," +
+                "'hora':'" + hora + "'," +
+                "'local':'" + local.getNombre() + "'," +
+                "'total':" + total + "," +
+                "'producto':" + toStringProductos() +
+                '}';
     }
 }

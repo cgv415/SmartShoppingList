@@ -55,4 +55,11 @@ public class Subcategoria {
             return false;
         }
     }
+
+    @Override
+    public String toString() {
+        return "'" +
+                nombre +
+                "'";
+    }
 }

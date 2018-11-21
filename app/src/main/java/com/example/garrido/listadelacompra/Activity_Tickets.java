@@ -1,13 +1,13 @@
 package com.example.garrido.listadelacompra;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.view.LayoutInflater;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -19,8 +19,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
+import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
+
 
 import java.util.ArrayList;
 
@@ -28,6 +29,11 @@ public class Activity_Tickets extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     DataBaseManager manager;
+    ListView lista;
+    ArrayList<Ticket> tickets;
+    AutoCompleteTextView buscadorTickets;
+    String orden = "fecha,hora";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,14 +47,7 @@ public class Activity_Tickets extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Intent intent = new Intent(getApplicationContext(),OCR.class);
-                //intent.putExtra("estatico",false);
-
                 popUp();
-                //Intent intent = new Intent(view.getContext(), OcrCaptureActivity.class);
-                //intent.putExtra(OcrCaptureActivity.AutoFocus, true);
-                //intent.putExtra(OcrCaptureActivity.UseFlash, false);
-                //startActivity(intent);
             }
         });
 
@@ -65,19 +64,9 @@ public class Activity_Tickets extends AppCompatActivity
         MenuItem nav = menu.findItem(R.id.nav_tickets);
         nav.setChecked(true);
 
-        ListView lista = this.findViewById(R.id.listview_tickets);
-        final ArrayList<Ticket> tickets = manager.obtenerTickets();
-        final ArrayList<String> list = new ArrayList<>();
-        for (Ticket ticket :
-                tickets) {
-            Local local = ticket.getLocal();
-            list.add(local.getNombre() + "," + ticket.getFecha() + "," + ticket.getHora());
-        }
+        lista = this.findViewById(R.id.listview_tickets);
 
-        //TODO Adaptador
-        //ArrayAdapter adaptador = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,list);
-        AdapterTicket adaptador = new AdapterTicket(this,tickets);
-        lista.setAdapter(adaptador);
+        actualizarLista(orden);
 
         lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -89,36 +78,57 @@ public class Activity_Tickets extends AppCompatActivity
             }
         });
 
-        lista.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+        buscadorTickets = findViewById(R.id.at_tickets);
+
+        ArrayList<String> arrayBuscador = new ArrayList<>();
+        for(Ticket ticket
+                :tickets){
+            if(!arrayBuscador.contains(ticket.getFecha())){
+                arrayBuscador.add(ticket.getFecha());
+            }
+
+            if(!arrayBuscador.contains(ticket.getHora())){
+                arrayBuscador.add(ticket.getHora());
+            }
+
+            if(!arrayBuscador.contains(ticket.getLocal().getNombre())){
+                arrayBuscador.add(ticket.getLocal().getNombre());
+            }
+
+            if(!arrayBuscador.contains(String.valueOf(ticket.getTotal()))){
+                arrayBuscador.add(String.valueOf(ticket.getTotal()));
+            }
+        }
+        ArrayAdapter<String> adapterBuscador = new ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,arrayBuscador);
+        buscadorTickets.setAdapter(adapterBuscador);
+
+        buscadorTickets.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Ticket t = tickets.get(i);
-                popUpEliminarTicket(t);
-                return false;
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if(charSequence.equals("")){
+                    actualizarLista("");
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
             }
         });
+
     }
 
-    public void popUpEliminarTicket(final Ticket ticket){
+    public void actualizarLista(String orden){
+        tickets = manager.obtenerTickets(orden);
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setTitle("Eliminar ticket");
-        builder.setMessage("¿Desea eliminar el ticket '" + ticket.getLocal().getNombre() + "'?");
-
-        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                //manager.eliminarProducto(producto);
-
-                //actualizarLista();
-            }
-        })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-
-                    }
-                });
-        builder.show();
+        AdapterTicket adaptador = new AdapterTicket(this,tickets);
+        lista.setAdapter(adaptador);
     }
 
     public void popUp() {
@@ -170,11 +180,18 @@ public class Activity_Tickets extends AppCompatActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        //TODO Actualizar obtener tickets("fecha,hora")
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.fecha) {
+            actualizarLista("fecha,hora");
+        }else if(id == R.id.local){
+            actualizarLista("local,fecha,hora");
+            orden = "local";
+        }else if(id == R.id.precio){
+            actualizarLista("total,local,fecha,hora");
+            orden = "total";
         }
 
         return super.onOptionsItemSelected(item);

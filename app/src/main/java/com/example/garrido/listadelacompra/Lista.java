@@ -79,4 +79,27 @@ public class Lista {
 
         return nombres;
     }
+
+    public String toStringProductos(){
+        String nombres = "";
+        Producto finProductos = productos.get(productos.size()-1);
+        for(Producto p
+                : productos){
+            nombres += p.toString();
+            if(!finProductos.equals(p)){
+                nombres += ",";
+            }
+        }
+
+        return nombres;
+    }
+
+    @Override
+    public String toString() {
+        return  "'" + nombre + "': {descripcion:'" +
+                descripcion + "',producto:{" +
+                toStringProductos() + "},principal:" +
+                principal +
+                "}";
+    }
 }

@@ -555,9 +555,9 @@ public class Activity_Productos extends AppCompatActivity
                 String nombreSubcategoria = nombresSubcategorias.get(i);
                 if(nombreSubcategoria.equals("nueva subcategoria")){
                     popUpInsertar("subcategoria");
-                                if(posSubcat>-1){
-                                    spSubcategoria.setSelection(posSubcat);
-                                }
+                    if(posSubcat>-1){
+                        spSubcategoria.setSelection(posSubcat);
+                    }
                 }
             }
 
@@ -632,13 +632,14 @@ public class Activity_Productos extends AppCompatActivity
                     actualizarSpinnerCategoria();
                 }else{
                     String cat = spCategoria.getSelectedItem().toString();
+                    Categoria categoria = manager.obtenerCategoria(cat);
+
                     spCategoria.getSelectedItemPosition();
                     Subcategoria subcategoria = new Subcategoria(et_categoria.getText().toString());
                     nombresSubcategorias.remove(nombresSubcategorias.size()-1);
-                    long idSubcategoria = manager.insertarSubcategoria(subcategoria);
+                    long idSubcategoria = manager.insertarSubcategoria(subcategoria,categoria);
                     subcategoria.setId(String.valueOf(idSubcategoria));
-                    Categoria categoria = manager.obtenerCategoria(cat);
-                    manager.insertarCategoria_Subcategoria(categoria,subcategoria);
+
                     nombresSubcategorias.add(subcategoria.getNombre());
                     Collections.sort(nombresSubcategorias);
                     nombresSubcategorias.add("nueva subcategoria");

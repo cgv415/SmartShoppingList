@@ -25,13 +25,23 @@
             android:icon="@drawable/ic_ticket_icon"
             android:title="Tickets" />
         <item
+            android:id="@+id/nav_import"
+            android:icon="@drawable/ic_import_export"
+            android:title="Export/Import" />
+        <item
             android:id="@+id/nav_est"
             android:icon="@drawable/ic_estadisticas_manage"
             android:title="Estadisticas" />
         <item
             android:id="@+id/nav_faq"
-            android:icon="@drawable/ic_menu_manage"
+            android:icon="@drawable/ic_faq"
             android:title="FAQ" />
+
+
+        <item
+            android:id="@+id/nav_reinicio"
+            android:icon="@drawable/ic_restart"
+            android:title="Reinciar BD" />
     </group>
 
 </menu>

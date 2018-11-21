@@ -425,6 +425,11 @@ public class OCR extends AppCompatActivity
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String hora = String.valueOf(pickerHora.getValue());
+
+                if(pickerHora.getValue()<10){
+                    hora = "0" + hora;
+                }
+
                 if(pickerMinutos.getValue()<10){
                     hora += ":0" + pickerMinutos.getValue();
                 }else{

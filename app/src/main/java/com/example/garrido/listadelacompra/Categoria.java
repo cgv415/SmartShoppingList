@@ -37,6 +37,26 @@ public class Categoria implements Comparable<Categoria>{
         return subcategorias;
     }
 
+    public ArrayList<String> getNombresSubcategorias(){
+        ArrayList<String> nombres = new ArrayList<>();
+
+        for(Subcategoria subcategoria:subcategorias){
+            nombres.add(subcategoria.toString());
+        }
+
+        return nombres;
+    }
+
+    public ArrayList<String> toStringSubcategorias(){
+        ArrayList<String> nombres = new ArrayList<>();
+
+        for(Subcategoria subcategoria:subcategorias){
+            nombres.add(subcategoria.toString());
+        }
+
+        return nombres;
+    }
+
     public void setSubcategorias(ArrayList<Subcategoria> subcategorias) {
         this.subcategorias = subcategorias;
     }
@@ -68,5 +88,11 @@ public class Categoria implements Comparable<Categoria>{
         }else{
             return this.getNombre().compareTo(categoria.getNombre());
         }
+    }
+
+    @Override
+    public String toString() {
+        return  "'" + nombre + "':" +
+                toStringSubcategorias();
     }
 }
