@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ListView;
@@ -340,7 +341,6 @@ public class Activity_Conjuntos extends AppCompatActivity
     public void popUpInsertarProductoEnConjunto(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Insertar en conjunto");
         LayoutInflater inflater = getLayoutInflater();
 
         final View v = inflater.inflate(R.layout.popup_insertar_en_lista, null);
@@ -354,15 +354,16 @@ public class Activity_Conjuntos extends AppCompatActivity
                 android.R.layout.simple_dropdown_item_1line, nombresProductos);
         buscadorInsertar.setAdapter(adapter);
 
+        final Tokenizer t = new Tokenizer();
         buscadorInsertar.setThreshold(1);
-        buscadorInsertar.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+        buscadorInsertar.setTokenizer(t);
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 Toast.makeText(getApplicationContext(),buscadorInsertar.getText().toString(),Toast.LENGTH_LONG).show();
 
-                StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),",");
+                StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),t.toString());
                 while(tokenizer.hasMoreTokens()){
                     String token = tokenizer.nextToken();
                     if(!token.equals(" ")){

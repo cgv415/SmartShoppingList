@@ -1,5 +1,6 @@
 package com.example.garrido.listadelacompra;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -125,6 +127,12 @@ public class Activity_Reinicio extends AppCompatActivity
                     manager.crearTablaTicket();
             }
         }
+
+        Toast.makeText(this,"Base de datos reiniciada con exito",Toast.LENGTH_LONG).show();
+        finish();
+
+        Intent intent = new Intent(this,MainActivity.class);
+        startActivity(intent);
     }
 
     @Override

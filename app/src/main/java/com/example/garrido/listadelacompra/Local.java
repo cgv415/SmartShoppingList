@@ -11,6 +11,7 @@ public class Local {
 
 
     public Local() {
+        nombre = "";
     }
 
     public Local(String nombre) {
@@ -73,9 +74,13 @@ public class Local {
         }
     }
 
+    public String toJSON() {
+        return "'" + getNombre() + "':{" +
+                toStringProductos() + "}";
+    }
+
     @Override
     public String toString() {
-        return "'" + nombre + "':{" +
-                toStringProductos() + "}";
+        return getNombre();
     }
 }

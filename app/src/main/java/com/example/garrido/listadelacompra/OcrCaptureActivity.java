@@ -87,7 +87,10 @@ public final class OcrCaptureActivity extends AppCompatActivity {
     private Local local;
     private String fecha;
     private String hora;
-    private TreeMap<String,Double> productos;
+    private String total;
+    private ArrayList<Producto> productos;
+    private ArrayList<Double> precios;
+    private ArrayList<String> nombresProductos;
 
     /**
      * Initializes the UI and creates the detector pipeline.
@@ -99,105 +102,9 @@ public final class OcrCaptureActivity extends AppCompatActivity {
 
         manager = new DataBaseManager(this);
 
-        mPreview = (CameraSourcePreview) findViewById(R.id.preview);
-        mGraphicOverlay = (GraphicOverlay<OcrGraphic>) findViewById(R.id.graphicOverlay);
-        //mGraphicOverlay.pruebas();
-        //ArrayList<String> bloques = mGraphicOverlay.obtenerBloques();
-        TreeMap<Producto,Double> productos = new TreeMap<>();
-        ArrayList<Producto> arrProductos = new ArrayList<>();
-        ArrayList<Double> precios = new ArrayList<>();
+        mPreview =  findViewById(R.id.preview);
+        mGraphicOverlay = findViewById(R.id.graphicOverlay);
 
-        /*Todo Bajar a onTap*/
-
-        //String product = "1 pipas gigantes\t1 12 huevos\n1 cocacola n 33\n1 l semi s/lacto\n1 spray invis m.\n1 copa chocolate\n1 granada granel\tdescripción\n1 bolsa pequena\n1 taquito jamon\n1 libritos lomo\n1 naranja\n1 barra de pan\n1 patata 3 kg\tdescripción\n1 bolsa pequena\n1 taquito jamon\n1 libritos lomo\n1 naranja\n1 barra de pan\n1 patata 3 kg\tsubtotal\t0,02\n1,99\n2.28\n0,46\n0,45\n3,40\n0,95\n1,29\n0,60\n4,50\n1,70\n0,85";
-        String product = "1 FOSFOROS GR.\n1 TURRON\n1 TURRON\n1 BOLSA PEQUENA\n1 NATA SPRAY S/L\n1 VELA CIFRA 2\n1 VELA CIFRA 5\n1 BOLLERIA GRANE\tprecio importe\t0,90\n2,50\n2,50\n0,02\n1,50\n0,65\n0,65\n3,83";
-        //String productn = "D\n1. PIPAS GIGANTES\n1 12 HUEVOS\n1 COCACOLA N 33\n1 L SEMI S/LACTO\n1 SPRAY INVIS M.\n1 COPA CHOCOLATE\n1 GRANADA GRANEL\nDescripción\n1 BOLSA PEQUENA\n1 TAQUITO JAMON\n1 LIBRITOS LOMO\n1 NARANJA\n1 BARRA DE PAN\n1 PATATA 3 KG\nDescripción\n1 BOLSA PEQUENA\n1 TAQUITO JAMON\n1 LIBRITOS LOMO\n1 NARANJA\n1 BARRA DE PAN\n1 PATATA 3 KG\nPrecio Importe\n0,02\n1,99\n2.28\n0,46\n0,45\n3,40\n0,95\n1,29\n0,60\n4,50\n1,70\n0,85";
-        Local local = manager.obtenerLocal("mercadona s.a");
-
-        ArrayList<Producto> p = manager.obtenerLocal_Productos(local);
-
-        StringTokenizer sttoken1 = new StringTokenizer(product,"\t");
-        while(sttoken1.hasMoreTokens()){
-
-            String token = sttoken1.nextToken();
-
-            if(token.contains("precio")||token.contains("total")||token.contains("importe")){
-
-                token  = sttoken1.nextToken();
-                StringTokenizer sttoken2 = new StringTokenizer(token,"\n");
-                while(sttoken2.hasMoreTokens()){
-                    try{
-                        String dob = sttoken2.nextToken().substring(0,4);
-                        dob = dob.replace(",",".");
-                        double precio =Double.parseDouble(dob);
-                        precios.add(precio);
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-                for(int i = 0 ; i < arrProductos.size();i++){
-                    try{
-                        productos.put(arrProductos.get(i),precios.get(i));
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
-
-            }else{
-                StringTokenizer sttoken2 = new StringTokenizer(token,"\n");
-                while(sttoken2.hasMoreTokens()){
-                    token = sttoken2.nextToken();
-                    Producto producto = new Producto();
-                    for(int i = 0; i < p.size(); i++){
-                        String nombre = p.get(i).getNombre();
-
-                        if(token.contains(nombre)){
-                            producto = p.get(i);
-                        }
-                    }
-                    if(producto.getNombre() != null){
-                        arrProductos.add(producto);
-                    }else{
-                        Producto pr = new Producto(token);
-                        arrProductos.add(pr);
-                    }
-                }
-            }
-
-        }
-
-        int sizeProductos = arrProductos.size();
-        int sizePrecios = precios.size();
-        ArrayList<String> nombreProductos = new ArrayList<>();
-
-        for(int i = 0 ; i < sizeProductos ; i++){
-            if(i<sizePrecios){
-                String pr = arrProductos.get(i).getNombre();
-                pr+="\t"+precios.get(i);
-                nombreProductos.add(pr);
-            }
-
-        }
-
-        //Intent data = new Intent();
-        Intent intent = new Intent(getApplicationContext(),OCR.class);
-        intent.putExtra("productos", nombreProductos);
-        /**/
-        ArrayList<String> datos = new ArrayList<>();
-        datos.add("mercadona s.a");
-        datos.add("10-10-2018");
-        datos.add("18:20");
-        datos.add("15.55");
-        intent.putExtra("datos",datos);
-        intent.putExtra("status",0);
-        startActivity(intent);
-
-        //setResult(CommonStatusCodes.SUCCESS, data);
-        //intent.putExtra("estatico",false);
-
-        //finish();
-        /*Todo fin*/
         // read parameters from the intent used to launch the activity.
         boolean autoFocus = getIntent().getBooleanExtra(AutoFocus, false);
         boolean useFlash = getIntent().getBooleanExtra(UseFlash, false);
@@ -437,28 +344,47 @@ public final class OcrCaptureActivity extends AppCompatActivity {
      */
     private boolean onTap(float rawX, float rawY) {
         OcrGraphic graphic = mGraphicOverlay.getGraphicAtLocation(rawX, rawY);
-        String seleccionado = graphic.getText();
-        //todo Modificado añadido
-        //MERCADONA S.A.\nMARIA CASARES,AV A DE ACA\nTeiefono 950206192
-
-        //P.V.P. I.V.A. INCLUIDO\n03/09/2018 19:44 OP: 275784\nF.SIMPLIFICADA: 3576-021-229355
-       // TreeMap<Float,Float> pos = mGraphicOverlay.getPos();
-        //TreeMap<Float,String> coordenadas = mGraphicOverlay.getCoordenadas();
-
-        //ArrayList<String> bloques = mGraphicOverlay.getBloques();
-        //seleccionado = mGraphicOverlay.getBloque(rawX,rawY);
 
         ArrayList<String> bloques = mGraphicOverlay.obtenerBloques();
+        String bloqueSeleccionado = graphic.getText().toLowerCase();
+        String bloquePrincipal = "";
+        bpbloque:
+        for(String bloque:bloques){
+            if(bloque.contains(bloqueSeleccionado)){
+                bloquePrincipal = bloque;
+                break bpbloque;
+            }
+        }
+
+        for(String bloque:bloques){
+            if(bloque.toLowerCase().contains("total")){
+               /* StringTokenizer tokenizer = new StringTokenizer(bloque,"\n");
+                while(tokenizer.hasMoreTokens()){
+                    String y = tokenizer.nextToken();
+                    StringTokenizer total = new StringTokenizer(y," ");
+                    while(total.hasMoreTokens()){
+                        String x = tokenizer.nextToken();
+                    }
+                }*/
+                total = bloque;
+            }
+        }
 
         fecha = "";
         hora = "";
         local = new Local("");
+
+        bpfecha:
         for (String bloque :
                 bloques) {
             StringTokenizer tokenizer = new StringTokenizer(bloque, "\n");
             String token = "";
             while(tokenizer.hasMoreTokens()){
                 token = tokenizer.nextToken();
+                if(local.getNombre()==""){
+                    local = new Local(token);
+                }
+
                 if(fecha==""){
                     StringTokenizer tokFechaHora = new StringTokenizer(token," ");
                     String fech = tokFechaHora.nextToken();
@@ -495,96 +421,80 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                             }
                         }
                     }
-                }
-
-                if(local.getNombre()==""){
-                    local = new Local(token);
+                }else{
+                    break bpfecha;
                 }
             }
+
+            //aqui buscar el total y guardarlo
         }
 
-        ArrayList<Producto> p = manager.obtenerLocal_Productos(local);
-        TreeMap<Producto,Double> productos = new TreeMap<>();
-        ArrayList<Producto> arrProductos = new ArrayList<>();
+        ArrayList<Producto> productos = new ArrayList<>();
+        ArrayList<Producto> arrProductos;
         ArrayList<Double> precios = new ArrayList<>();
 
-        StringTokenizer sttoken1 = new StringTokenizer(seleccionado,"\t");
-        while(sttoken1.hasMoreTokens()) {
+        String bloquePrecios = bloquePrincipal.replace(bloqueSeleccionado,"");
+        String bloqueProductos = bloqueSeleccionado;
 
-            String token = sttoken1.nextToken();
+        arrProductos = manager.obtenerProductos();
 
-            if (token.contains("precio") || token.contains("total") || token.contains("importe")) {
-
-                token = sttoken1.nextToken();
-                StringTokenizer sttoken2 = new StringTokenizer(token, "\n");
-                while (sttoken2.hasMoreTokens()) {
-                    try {
-                        String dob = sttoken2.nextToken().substring(0, 4);
-                        dob = dob.replace(",", ".");
-                        double precio = Double.parseDouble(dob);
-                        precios.add(precio);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+        StringTokenizer tokenProductos = new StringTokenizer(bloqueProductos,"\n");
+        while(tokenProductos.hasMoreTokens()){
+            String nombreProducto = tokenProductos.nextToken();
+            Producto p = new Producto("");
+            forProducto:
+            for(Producto producto: arrProductos){
+                if(producto.getNombre().contains(nombreProducto) || nombreProducto.contains(producto.getNombre())){
+                    p = producto;
+                    break forProducto;
                 }
+            }
+            if(p.getNombre().equals("") ){
+                p.setNombre(nombreProducto);
+                productos.add(p);
+            }
+        }
 
-                for (int i = 0; i < arrProductos.size(); i++) {
-                    try {
-                        productos.put(arrProductos.get(i), precios.get(i));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+        StringTokenizer tokenPrecios = new StringTokenizer(bloquePrecios,"\t");
+        while(tokenPrecios.hasMoreTokens()) {
 
-            } else {
-                StringTokenizer sttoken2 = new StringTokenizer(token, "\n");
-                while (sttoken2.hasMoreTokens()) {
-                    token = sttoken2.nextToken();
-                    Producto producto = new Producto();
-                    for (int i = 0; i < p.size(); i++) {
-                        String nombre = p.get(i).getNombre();
-
-                        if (token.contains(nombre)) {
-                            producto = p.get(i);
-                        }
-                    }
-                    if (producto.getNombre() != null) {
-                        arrProductos.add(producto);
-                    } else {
-                        Producto pr = new Producto(token);
-                        arrProductos.add(pr);
-                    }
+            String token = tokenPrecios.nextToken();
+            StringTokenizer sttoken2 = new StringTokenizer(token, "\n");
+            while (sttoken2.hasMoreTokens()) {
+                try {
+                    String dob = sttoken2.nextToken().substring(0, 4);
+                    dob = dob.replace(",", ".");
+                    double precio = Double.parseDouble(dob);
+                    precios.add(precio);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
         }
 
-        int sizeProductos = arrProductos.size();
-        int sizePrecios = precios.size();
-
-        for(int i = 0 ; i < sizeProductos ; i++){
-            if(i<sizePrecios){
-                arrProductos.get(i).setPrecio(precios.get(i));
-            }
-
+        nombresProductos = new ArrayList<>();
+        for(int i = 0 ; i < productos.size() ; i++){
+            nombresProductos.add(productos.get(i).getNombre());
         }
-        /*
-
-        "D\t1. PIPAS GIGANTES\t1 12 HUEVOS\n1 COCACOLA N 33\n1 L SEMI S/LACTO\n1 SPRAY INVIS M.\n1 COPA CHOCOLATE\n1 GRANADA GRANEL\tDescripción\n1 BOLSA PEQUENA\n1 TAQUITO JAMON\n1 LIBRITOS LOMO\n1 NARANJA\n1 BARRA DE PAN\n1 PATATA 3 KG\tDescripción\n1 BOLSA PEQUENA\n1 TAQUITO JAMON\n1 LIBRITOS LOMO\n1 NARANJA\n1 BARRA DE PAN\n1 PATATA 3 KG\tPrecio Importe\t0,02\n1,99\n2.28\n0,46\n0,45\n3,40\n0,95\n1,29\n0,60\n4,50\n1,70\n0,85"
-         */
-
-        //String product = "D\t1. PIPAS GIGANTES\t1 12 HUEVOS\n1 COCACOLA N 33\n1 L SEMI S/LACTO\n1 SPRAY INVIS M.\n1 COPA CHOCOLATE\n1 GRANADA GRANEL\tDescripción\n1 BOLSA PEQUENA\n1 TAQUITO JAMON\n1 LIBRITOS LOMO\n1 NARANJA\n1 BARRA DE PAN\n1 PATATA 3 KG\tDescripción\n1 BOLSA PEQUENA\n1 TAQUITO JAMON\n1 LIBRITOS LOMO\n1 NARANJA\n1 BARRA DE PAN\n1 PATATA 3 KG\tPrecio Importe\t0,02\n1,99\n2.28\n0,46\n0,45\n3,40\n0,95\n1,29\n0,60\n4,50\n1,70\n0,85";
-        //String product = "1 FOSFOROS GR.\n1 TURRON\n1 TURRON\n1 BOLSA PEQUENA\n1 NATA SPRAY S/L\n1 VELA CIFRA 2\n1 VELA CIFRA 5\n1 BOLLERIA GRANE\n\t0,90\n2,50\n2,50\n0,02\n1,50\n0,65\n0,65\n3,83";
-        //fin añadido
 
         TextBlock text = null;
         if (graphic != null) {
             text = graphic.getTextBlock();
             if (text != null && text.getValue() != null) {
-                Intent data = new Intent();
-                data.putExtra(TextBlockObject, text.getValue());
+                ArrayList<String> datos = new ArrayList<>();
+                datos.add(local.getNombre());
+                datos.add(fecha);
+                datos.add(hora);
+                datos.add(String.valueOf("0.0"));
+                Intent data = new Intent(this,OCR.class);
+                data.putExtra("productos", nombresProductos);
+                data.putExtra("precios", precios);
+                data.putExtra("datos", datos);
                 setResult(CommonStatusCodes.SUCCESS, data);
+                startActivity(data);
                 finish();
+
             }
             else {
                 Log.d(TAG, "text data is null");
@@ -657,26 +567,4 @@ public final class OcrCaptureActivity extends AppCompatActivity {
             mCameraSource.doZoom(detector.getScaleFactor());
         }
     }
-
-    public void analizarBloque(String bloque){
-        StringTokenizer tokenizer = new StringTokenizer(bloque,"\n");
-
-
-        if(tokenizer.hasMoreTokens()){
-            String line = "";
-            line = tokenizer.nextToken();
-            Local local = manager.obtenerLocal(line);
-            if(local.getId()!="0"){
-
-            }
-        }
-    }
 }
-//Todo Modificado añadido
-    /*
-    private boolean onTap(float rawX, float rawY) {
-        OcrGraphic graphic = mGraphicOverlay.getGraphicAtLocation(rawX, rawY);
-        ArrayList<String> bloques = mGraphicOverlay.getArGraphics();
-        ...
-    }
-*/

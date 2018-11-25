@@ -435,7 +435,6 @@ public class Activity_Local extends AppCompatActivity
 
         final EditText etPrecio = v.findViewById(R.id.et_precio);
 
-        builder.setTitle("Insertar producto en local");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {

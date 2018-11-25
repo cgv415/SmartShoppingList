@@ -19,6 +19,9 @@ public class Categoria implements Comparable<Categoria>{
     }
 
     public Categoria() {
+        nombre = "";
+        subcategorias = new ArrayList<>();
+        productos = new ArrayList<>();
     }
 
     public void setId(String id) {
@@ -90,9 +93,13 @@ public class Categoria implements Comparable<Categoria>{
         }
     }
 
-    @Override
-    public String toString() {
+    public String toJSON() {
         return  "'" + nombre + "':" +
                 toStringSubcategorias();
+    }
+
+    @Override
+    public String toString() {
+        return  getNombre();
     }
 }

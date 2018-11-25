@@ -14,6 +14,8 @@ public class Subcategoria {
     }
 
     public Subcategoria() {
+        nombre = "";
+        productos = new ArrayList<>();
     }
 
     public String getId() {

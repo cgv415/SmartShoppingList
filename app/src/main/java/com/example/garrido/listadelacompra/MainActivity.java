@@ -3,10 +3,10 @@ package com.example.garrido.listadelacompra;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.SubMenu;
 import android.view.View;
@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
@@ -28,6 +29,8 @@ import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -340,12 +343,10 @@ public class MainActivity extends AppCompatActivity
 
         final View v = inflater.inflate(R.layout.popup_insertar_lista, null);
 
-
         final EditText etNombre = v.findViewById(R.id.et_nombre_lista);
         final EditText etDescripcion = v.findViewById(R.id.et_descripcion);
         final CheckBox cbPrincipal = v.findViewById(R.id.cb_principal);
 
-        builder.setTitle("Crea tu primera Lista");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -385,11 +386,12 @@ public class MainActivity extends AppCompatActivity
         etDescripcion.setText(lista.getDescripcion());
         cbPrincipal.setChecked(lista.isPrincipal());
 
-        builder.setTitle("Modificar Lista");
+        Button header = v.findViewById(R.id.btn_header);
+        header.setText("modificar lista");
+
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                int pos = listas.indexOf(lista.getNombre());
                 lista.setNombre(etNombre.getText().toString());
                 lista.setDescripcion(etDescripcion.getText().toString());
                 if(listas.size()==0){
@@ -400,7 +402,6 @@ public class MainActivity extends AppCompatActivity
 
                 manager.modificarLista(lista);
 
-                //listas.set(pos,lista);
                 setTitle(lista.getNombre());
 
             }
@@ -416,9 +417,16 @@ public class MainActivity extends AppCompatActivity
     public void popUpEliminar(final Lista lista){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        final View v = inflater.inflate(R.layout.popup_eliminar, null);
 
-        builder.setTitle("Eliminar Lista");
-        builder.setMessage("¿Desea eliminar la lista '" + lista.getNombre() + "' y todos sus productos?");
+        Button header = v.findViewById(R.id.btn_header);
+        TextView mensaje = v.findViewById(R.id.tv_mensaje);
+
+        header.setText("Eliminar lista");
+        mensaje.setText("¿Desea eliminar la lista '" + lista.getNombre() + "' y todos sus productos?");
+
+        builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarLista(lista);
@@ -436,7 +444,7 @@ public class MainActivity extends AppCompatActivity
     public void popUpInsertarProductoEnLista(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Insertar en lista");
+
         LayoutInflater inflater = getLayoutInflater();
 
         final View v = inflater.inflate(R.layout.popup_insertar_en_lista, null);
@@ -450,21 +458,28 @@ public class MainActivity extends AppCompatActivity
                 android.R.layout.simple_dropdown_item_1line, nombresProductos);
         buscadorInsertar.setAdapter(adapter);
 
+        final Tokenizer t = new Tokenizer();
         buscadorInsertar.setThreshold(1);
-        buscadorInsertar.setTokenizer(new MultiAutoCompleteTextView.CommaTokenizer());
+        buscadorInsertar.setTokenizer(t);
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        Toast.makeText(getApplicationContext(),buscadorInsertar.getText().toString(),Toast.LENGTH_LONG).show();
 
-                        StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),",");
+                        StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),t.toString());
                         while(tokenizer.hasMoreTokens()){
                             String token = tokenizer.nextToken();
                             Producto producto = manager.obtenerProductoByNombre(token);
+                            ArrayList<Producto> productos = lista.getProductos();
+                            productos.add(producto);
+                            lista.setProductos(productos);
+                        }
+                        for(int i = 0 ; i < lista.getProductos().size() ; i++){
+                            Producto producto = lista.getProductos().get(i);
                             manager.insertarProducto_Lista(producto,lista);
                         }
                         actualizarLista();
+                        Toast.makeText(getApplicationContext(),buscadorInsertar.getText().toString(),Toast.LENGTH_LONG).show();
                         Toast.makeText(getApplicationContext(),"Productos insertados con exito!",Toast.LENGTH_LONG).show();
 
                     }
@@ -488,6 +503,17 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarProducto_Lista(producto,lista);
+                ArrayList<Producto> productos = lista.getProductos();
+                int pos = -1;
+                for(int i = 0 ; i < productos.size(); i++){
+                    if(producto.getNombre().equals(productos.get(i).getNombre())){
+                        pos = i;
+                    }
+                }
+                if(pos > -1){
+                    productos.remove(pos);
+                }
+                lista.setProductos(productos);
                 actualizarLista();
             }
         })
@@ -682,7 +708,7 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         finish();
 
         manager.gestionarMenu(item,this);

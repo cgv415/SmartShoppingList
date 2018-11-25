@@ -27,6 +27,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.reflect.Array;
@@ -363,13 +364,20 @@ public class Activity_Productos extends AppCompatActivity
         }
     }
 
-    public void actualizarSpinnerCategoria(){
+    public void actualizarCategorias(){
+        ArrayAdapter<String> adapterCategoria = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, nombreCategorias);
+        spCategoria.setAdapter(adapterCategoria);
+
         if(posCat>-1){
             spCategoria.setSelection(posCat);
         }
+
     }
 
-    public void actualizarSpinnerSubcategoria(){
+    public void actualizarSubcategorias(){
+        ArrayAdapter<String> adapterSubcategoria = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, nombresSubcategorias);
+        spSubcategoria.setAdapter(adapterSubcategoria);
+
         if(posSubcat>-1){
             spSubcategoria.setSelection(posSubcat);
         }
@@ -384,7 +392,6 @@ public class Activity_Productos extends AppCompatActivity
 
         etNombre = v.findViewById(R.id.et_nombre_producto);
         etDescripcion = v.findViewById(R.id.et_descripcion);
-        etMarca = v.findViewById(R.id.et_marca);
         etEtiqueta = v.findViewById(R.id.et_alias);
 
         spCategoria = v.findViewById(R.id.sp_categoria);
@@ -393,8 +400,8 @@ public class Activity_Productos extends AppCompatActivity
         nombreCategorias = manager.obtenerNombreCategorias();
         Collections.sort(nombreCategorias);
         nombreCategorias.add("nueva categoria");
-        ArrayAdapter<String> adapterCategoria = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, nombreCategorias);
-        spCategoria.setAdapter(adapterCategoria);
+
+        actualizarCategorias();
 
         spCategoria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -412,8 +419,8 @@ public class Activity_Productos extends AppCompatActivity
                     }
                     Collections.sort(nombresSubcategorias);
                     nombresSubcategorias.add("nueva subcategoria");
-                    ArrayAdapter<String> adapterSubcategoria = new ArrayAdapter<>(view.getContext(), android.R.layout.simple_spinner_item, nombresSubcategorias);
-                    spSubcategoria.setAdapter(adapterSubcategoria);
+
+                    actualizarSubcategorias();
                 }
             }
 
@@ -429,9 +436,6 @@ public class Activity_Productos extends AppCompatActivity
                 String nombreSubcategoria = nombresSubcategorias.get(i);
                 if(nombreSubcategoria.equals("nueva subcategoria")){
                     popUpInsertar("subcategoria");
-                                if(posSubcat>-1){
-                                    spSubcategoria.setSelection(posSubcat);
-                                }
                 }
             }
 
@@ -441,7 +445,9 @@ public class Activity_Productos extends AppCompatActivity
             }
         });
 
-        builder.setTitle("Insertar Producto");
+
+        //builder.setTitle("Insertar Producto");
+
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -482,6 +488,9 @@ public class Activity_Productos extends AppCompatActivity
 
         final View v = inflater.inflate(R.layout.popup_insertar_producto, null);
 
+        Button header = v.findViewById(R.id.btn_header);
+        header.setText("Modificar texto");
+
         comparar = v.findViewById(R.id.btn_gestionar);
 
         comparar.setOnClickListener(new View.OnClickListener() {
@@ -496,9 +505,6 @@ public class Activity_Productos extends AppCompatActivity
 
         etDescripcion = v.findViewById(R.id.et_descripcion);
         etDescripcion.setText(producto.getDescripcion());
-
-        etMarca = v.findViewById(R.id.et_marca);
-        etMarca.setText(producto.getMarca());
 
         etEtiqueta = v.findViewById(R.id.et_alias);
         etEtiqueta.setText(producto.getEtiqueta());
@@ -522,9 +528,6 @@ public class Activity_Productos extends AppCompatActivity
                 String nombreCategoria = nombreCategorias.get(i);
                 if(nombreCategoria.equals("nueva categoria")){
                     popUpInsertar("categoria");
-                    if(posCat>-1){
-                        spCategoria.setSelection(posCat);
-                    }
                 }else{
                     Categoria categoria = manager.obtenerCategoria(nombreCategoria);
                     ArrayList<Subcategoria> subcategorias = manager.obtenerSubcategorias_Categoria(categoria);
@@ -534,6 +537,7 @@ public class Activity_Productos extends AppCompatActivity
                     }
                     Collections.sort(nombresSubcategorias);
                     nombresSubcategorias.add("nueva subcategoria");
+
                     ArrayAdapter<String> adapterSubcategoria = new ArrayAdapter<>(view.getContext(), android.R.layout.simple_spinner_item, nombresSubcategorias);
                     spSubcategoria.setAdapter(adapterSubcategoria);
 
@@ -567,7 +571,6 @@ public class Activity_Productos extends AppCompatActivity
             }
         });
 
-        builder.setTitle("Modificar Producto");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -629,7 +632,7 @@ public class Activity_Productos extends AppCompatActivity
                     Collections.sort(nombreCategorias);
                     nombreCategorias.add("nueva categoria");
                     posCat = nombreCategorias.indexOf(nombre);
-                    actualizarSpinnerCategoria();
+                    actualizarCategorias();
                 }else{
                     String cat = spCategoria.getSelectedItem().toString();
                     Categoria categoria = manager.obtenerCategoria(cat);
@@ -644,7 +647,8 @@ public class Activity_Productos extends AppCompatActivity
                     Collections.sort(nombresSubcategorias);
                     nombresSubcategorias.add("nueva subcategoria");
                     posSubcat = nombresSubcategorias.indexOf(subcategoria.getNombre());
-                    actualizarSpinnerSubcategoria();
+
+                    actualizarSubcategorias();
                 }
             }
         })
@@ -706,10 +710,16 @@ public class Activity_Productos extends AppCompatActivity
     public void popUpEliminar(final Producto producto){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        final View v = inflater.inflate(R.layout.popup_eliminar, null);
 
-        builder.setTitle("Eliminar producto");
-        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "'?");
+        Button header = v.findViewById(R.id.btn_header);
+        TextView mensaje = v.findViewById(R.id.tv_mensaje);
 
+        header.setText("Eliminar producto");
+        mensaje.setText("¿Desea eliminar el producto '" + producto.getNombre() + "'?");
+
+        builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarProducto(producto);

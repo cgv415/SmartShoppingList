@@ -7,7 +7,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/btn_header"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:hint="buscar productos" />
+
+    <Button
+        android:id="@+id/btn_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        android:paddingLeft="20dp"
+        android:text="Insertar producto"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/background_light"
+        android:textSize="18sp" />
 
 </RelativeLayout>

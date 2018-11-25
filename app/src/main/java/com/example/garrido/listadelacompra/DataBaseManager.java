@@ -664,6 +664,7 @@ public class DataBaseManager implements Database {
     public Local obtenerLocal(String nombre) {
         String[] columnas = new String[] {CN_ID,CN_NOMBRE};
         Local local = new Local();
+        local.setId("-1");
         Cursor cursor = db.query(TABLE_LOCAL,columnas,CN_NOMBRE+ " = ?",new String[]{nombre},null,null,null);
         if(cursor.moveToFirst()) {
             do {
@@ -841,11 +842,11 @@ public class DataBaseManager implements Database {
 
     @Override
     public long insertarSubcategoria(Subcategoria subcategoria,Categoria categoria) {
-        Subcategoria s = obtenerSubcategoria(subcategoria.getNombre());
 
+        long id = db.insert(TABLE_SUBCATEGORIA, null, generarValoresSubcategoria(subcategoria));
+        subcategoria.setId(String.valueOf(id));
         insertarCategoria_Subcategoria(categoria,subcategoria);
-        return db.insert(TABLE_SUBCATEGORIA, null, generarValoresSubcategoria(subcategoria));
-
+        return id;
     }
 
     @Override
@@ -1076,8 +1077,9 @@ public class DataBaseManager implements Database {
     @Override
     public ArrayList<Producto> obtenerLocal_Productos(Local local) {
         String[] columnas = new String[] {CN_ID,CN_IDLOCAL,CN_IDPRODUCTO,CN_PRECIO};
+        String idLocal = obtenerLocal(local.getNombre()).getId();
         ArrayList<Producto> productos = new ArrayList<>();
-        Cursor cursor = db.query(TABLE_PRODUCTO_LOCAL, columnas, CN_IDLOCAL + " = ?", new String[]{local.getId()}, null, null, CN_IDLOCAL);
+        Cursor cursor = db.query(TABLE_PRODUCTO_LOCAL, columnas, CN_IDLOCAL + " = ?", new String[]{idLocal}, null, null, CN_IDLOCAL);
         if(cursor.moveToFirst()) {
             do {
                 String id = cursor.getString(2);

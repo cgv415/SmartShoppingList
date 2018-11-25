@@ -4,39 +4,26 @@
 
     <EditText
         android:id="@+id/et_nombre_conjunto"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:ems="10"
         android:hint="Nombre"
         android:inputType="textPersonName" />
 
     <EditText
         android:id="@+id/et_descripcion_conjunto"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/et_nombre_conjunto"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:ems="10"
         android:hint="Descripcion"
         android:inputType="textPersonName" />
-
-    <TextView
-        android:id="@+id/textView22"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_nombre_conjunto"
-        android:layout_alignStart="@+id/textView23"
-        android:text="Nombre" />
-
-    <TextView
-        android:id="@+id/textView23"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_descripcion_conjunto"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="30dp"
-        android:text="Descripcion" />
 
 </RelativeLayout>

@@ -74,8 +74,8 @@ public class Ticket {
     }
 
 
-    @Override
-    public String toString() {
+
+    public String toJSON() {
         return  "'" + fecha + " " + hora + "':" +
                 "{'fecha':'" + fecha + "'," +
                 "'hora':'" + hora + "'," +
@@ -83,5 +83,10 @@ public class Ticket {
                 "'total':" + total + "," +
                 "'producto':" + toStringProductos() +
                 '}';
+    }
+
+    @Override
+    public String toString() {
+        return  fecha + ";" + hora;
     }
 }

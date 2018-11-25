@@ -4,39 +4,25 @@
 
     <EditText
         android:id="@+id/et_precio_producto"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:layout_marginTop="47dp"
         android:ems="10"
         android:hint="Precio producto"
         android:inputType="textPersonName|numberDecimal" />
 
-    <TextView
-        android:id="@+id/textView25"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/et_precio_producto"
-        android:layout_alignParentStart="true"
-        android:layout_marginBottom="-47dp"
-        android:layout_marginStart="40dp"
-        android:text="@string/nombre_producto" />
-
-    <TextView
-        android:id="@+id/textView26"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_precio_producto"
-        android:layout_alignStart="@+id/textView25"
-        android:text="@string/precio_producto" />
-
     <AutoCompleteTextView
         android:id="@+id/at_productos"
-        android:layout_width="215dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/et_precio_producto"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:hint="Producto" />
 
 </RelativeLayout>

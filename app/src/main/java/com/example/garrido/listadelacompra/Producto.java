@@ -23,6 +23,11 @@ public class Producto implements Comparable<Producto>,Parcelable{
         this.nombre = nombre;
     }
 
+    public Producto(String nombre, double precio){
+        this.nombre = nombre;
+        this.precio = precio;
+    }
+
     protected Producto(Parcel in) {
         id = in.readString();
         nombre = in.readString();
@@ -172,8 +177,7 @@ public class Producto implements Comparable<Producto>,Parcelable{
         parcel.writeDouble(precio);
     }
 
-    @Override
-    public String toString() {
+    public String toJSON() {
         return "'" + nombre + "': {descripcion:'" +
                 descripcion + "',etiqueta: '" +
                 etiqueta + "',categoria: '" +
@@ -181,5 +185,10 @@ public class Producto implements Comparable<Producto>,Parcelable{
                 subcategoria.getNombre() + "',marca: '" +
                 marca +
                 "'}";
+    }
+
+    @Override
+    public String toString() {
+        return getNombre();
     }
 }

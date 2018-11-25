@@ -1,124 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_marginLeft="0dp"
+    android:layout_marginRight="0dp">
 
     <EditText
         android:id="@+id/et_nombre_producto"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="169dp"
+        android:layout_below="@+id/button2"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:ems="10"
         android:hint="nombre"
         android:inputType="textPersonName" />
 
     <EditText
         android:id="@+id/et_descripcion"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/et_nombre_producto"
-        android:layout_marginStart="169dp"
+        android:layout_below="@id/et_alias"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:ems="10"
         android:hint="descripcion"
         android:inputType="textPersonName" />
 
     <EditText
-        android:id="@+id/et_marca"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/sp_subcategoria"
-        android:ems="10"
-        android:hint="marca"
-        android:inputType="textPersonName" />
-
-    <EditText
         android:id="@+id/et_alias"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/et_marca"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/sp_subcategoria"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:ems="10"
         android:hint="Etiqueta"
         android:inputType="textPersonName" />
 
     <Spinner
         android:id="@+id/sp_categoria"
-        android:layout_width="217dp"
+        android:layout_width="match_parent"
         android:layout_height="42dp"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/et_descripcion"
-        android:layout_marginEnd="0dp" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/et_nombre_producto"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
 
     <Spinner
         android:id="@+id/sp_subcategoria"
-        android:layout_width="217dp"
+        android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/sp_categoria"
-        android:layout_marginEnd="0dp" />
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp" />
 
     <Button
         android:id="@+id/btn_gestionar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/et_descripcion"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@android:color/transparent"
+        android:text="Comparar Precios"
+        android:textAlignment="textStart"
+        android:textColor="?attr/colorPrimaryDark" />
+
+    <Button
+        android:id="@+id/btn_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/et_alias"
-        android:text="Comparar Precios" />
-
-    <TextView
-        android:id="@+id/textView16"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_descripcion"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="26dp"
-        android:text="Descripcion" />
-
-    <TextView
-        android:id="@+id/textView17"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/sp_categoria"
-        android:layout_alignStart="@+id/textView16"
-        android:text="Categoria" />
-
-    <TextView
-        android:id="@+id/textView18"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/et_marca"
-        android:layout_alignStart="@+id/textView16"
-        android:text="Subcategoria" />
-
-    <TextView
-        android:id="@+id/textView19"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_marca"
-        android:layout_alignStart="@+id/textView16"
-        android:text="Marca" />
-
-    <TextView
-        android:id="@+id/textView20"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_alias"
-        android:layout_alignStart="@+id/textView16"
-        android:text="Etiqueta" />
-
-    <TextView
-        android:id="@+id/textView24"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/et_nombre_producto"
-        android:layout_alignStart="@+id/textView16"
-        android:text="Nombre" />
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        android:paddingLeft="20dp"
+        android:text="Insertar Producto"
+        android:textAlignment="textStart"
+        android:textColor="@android:color/background_light"
+        android:textSize="18sp" />
 
 </RelativeLayout>

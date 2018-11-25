@@ -94,12 +94,16 @@ public class Lista {
         return nombres;
     }
 
-    @Override
-    public String toString() {
+    public String toJSON() {
         return  "'" + nombre + "': {descripcion:'" +
                 descripcion + "',producto:{" +
                 toStringProductos() + "},principal:" +
                 principal +
                 "}";
+    }
+
+    @Override
+    public String toString() {
+        return  getNombre();
     }
 }

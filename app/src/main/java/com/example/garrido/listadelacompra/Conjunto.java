@@ -9,6 +9,9 @@ public class Conjunto {
     private ArrayList<Producto> productos;
 
     public Conjunto() {
+        productos = new ArrayList<>();
+        nombre = "";
+        descripcion = "";
     }
 
     public Conjunto(String nombre, String descripcion) {
@@ -90,11 +93,15 @@ public class Conjunto {
         }
     }
 
-    @Override
-    public String toString() {
+    public String toJSON() {
         return  "'" + nombre + "': {descripcion:'" +
                 descripcion + "',producto:{" +
                 toStringProductos() + "}" +
                 "}";
+    }
+
+    @Override
+    public String toString() {
+        return  getNombre();
     }
 }

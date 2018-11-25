@@ -38,7 +38,7 @@ public class Activity_Listas extends AppCompatActivity
     private EditText etDescripcion;
     private CheckBox cbPrincipal;
 
-
+//TODO SIN USO ACTUAL, REEMPLAZADO POR MAINACTIVITY
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

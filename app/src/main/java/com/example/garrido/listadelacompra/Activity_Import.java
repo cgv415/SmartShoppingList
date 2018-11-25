@@ -175,7 +175,7 @@ public class Activity_Import extends AppCompatActivity
                 ArrayList<Categoria> categorias = manager.obtenerCategorias();
                 Categoria finCategorias = categorias.get(categorias.size()-1);
                 for(Categoria categoria : categorias){
-                    exportado += categoria.toString();
+                    exportado += categoria.toJSON();
                     if(!finCategorias.getNombre().equals(categoria.getNombre())){
                         exportado += ",";
                     }
@@ -187,7 +187,7 @@ public class Activity_Import extends AppCompatActivity
                 ArrayList<Producto> productos = manager.obtenerProductos();
                 Producto finProductos = productos.get(productos.size()-1);
                 for(Producto producto : productos){
-                    exportado += producto.toString();
+                    exportado += producto.toJSON();
                     if(!finProductos.getNombre().equals(producto.getNombre())){
                         exportado += ",";
                     }
@@ -199,7 +199,7 @@ public class Activity_Import extends AppCompatActivity
                 ArrayList<Lista> listas = manager.obtenerListas();
                 Lista finListas = listas.get(listas.size()-1);
                 for(Lista lista : listas){
-                    exportado += lista.toString();
+                    exportado += lista.toJSON();
                     if(!finListas.getNombre().equals(lista.getNombre())){
                         exportado += ",";
                     }
@@ -211,7 +211,7 @@ public class Activity_Import extends AppCompatActivity
                 ArrayList<Conjunto> conjuntos = manager.obtenerConjuntos();
                 Conjunto finConjuntos = conjuntos.get(conjuntos.size()-1);
                 for(Conjunto conjunto:conjuntos){
-                    exportado += conjunto.toString();
+                    exportado += conjunto.toJSON();
                     if(!finConjuntos.getNombre().equals(conjunto.getNombre())){
                         exportado += ",";
                     }
@@ -223,7 +223,7 @@ public class Activity_Import extends AppCompatActivity
                 ArrayList<Local> locales = manager.obtenerLocales();
                 Local finLocales = locales.get(locales.size()-1);
                 for(Local local:locales){
-                    exportado += local.toString();
+                    exportado += local.toJSON();
                     if(!finLocales.getNombre().equals(local.getNombre())){
                         exportado += ",";
                     }
@@ -235,7 +235,7 @@ public class Activity_Import extends AppCompatActivity
                 ArrayList<Ticket> tickets = manager.obtenerTickets("fecha");
                 Ticket finTickets = tickets.get(tickets.size()-1);
                 for(Ticket ticket:tickets){
-                    exportado += ticket.toString();
+                    exportado += ticket.toJSON();
                     if(!finTickets.getIdTicket().equals(ticket.getIdTicket())){
                         exportado += ",";
                     }
