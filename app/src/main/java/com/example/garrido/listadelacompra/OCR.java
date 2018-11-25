@@ -178,14 +178,15 @@ public class OCR extends AppCompatActivity
             }
         }else{
             nombresProductos = bundle.getStringArrayList("productos");
+            ArrayList<Double> precios =(ArrayList<Double>) bundle.get("precios");
             datos = bundle.getStringArrayList("datos");
             productos = new ArrayList<>();
             for(int i = 0 ; i < nombresProductos.size() ; i ++){
-                Producto pr = new Producto();
-                StringTokenizer tokenizer = new StringTokenizer(nombresProductos.get(i),"\t");
-                pr.setNombre(tokenizer.nextToken());
-                pr.setPrecio(Double.parseDouble(tokenizer.nextToken()));
-                productos.add(pr);
+                int iprecio = nombresProductos.size() - precios.size();
+                if(i >= iprecio){
+                    Producto pr = new Producto(nombresProductos.get(i),precios.get(i-iprecio));
+                    productos.add(pr);
+                }
             }
 
             tvLocal.setText(datos.get(0));
