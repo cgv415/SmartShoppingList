@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -21,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class Activity_Tickets extends AppCompatActivity
     ArrayList<Ticket> tickets;
     AutoCompleteTextView buscadorTickets;
     String orden = "fecha,hora";
+    boolean longclick = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,20 +69,33 @@ public class Activity_Tickets extends AppCompatActivity
 
         lista = this.findViewById(R.id.listview_tickets);
 
-        actualizarLista(orden);
+        tickets = manager.obtenerTickets(orden);
+        actualizarLista();
 
         lista.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getApplicationContext(),OCR.class);
-                intent.putExtra("status",1);
-                intent.putExtra("idTicket",tickets.get(i).getIdTicket());
-                startActivity(intent);
+                if(!longclick){
+                    Intent intent = new Intent(getApplicationContext(),OCR.class);
+                    intent.putExtra("status",1);
+                    intent.putExtra("idTicket",tickets.get(i).getIdTicket());
+                    startActivity(intent);
+                }
+
             }
         });
 
+        lista.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                longclick = true;
+                popUpEliminarTicket(tickets.get(i));
+                return false;
+            }
+        });
 
         buscadorTickets = findViewById(R.id.at_tickets);
+        buscadorTickets.setThreshold(100);
 
         ArrayList<String> arrayBuscador = new ArrayList<>();
         for(Ticket ticket
@@ -111,9 +127,26 @@ public class Activity_Tickets extends AppCompatActivity
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(charSequence.equals("")){
-                    actualizarLista("");
+                ArrayList<Ticket> filterTicket = new ArrayList<>();
+                if(charSequence.toString().equals("")){
+                    tickets = manager.obtenerTickets(orden);
+                }else{
+                    for(Ticket ticket:tickets){
+                        if(ticket.getLocal().getNombre().contains(charSequence) ||
+                                ticket.getFecha().contains(charSequence) ||
+                                ticket.getHora().contains(charSequence)){
+                            filterTicket.add(ticket);
+                        }else{
+                            for(Producto producto:ticket.getProductos()){
+                                if(producto.getNombre().contains(charSequence)){
+                                    filterTicket.add(ticket);
+                                }
+                            }
+                        }
+                    }
+                    tickets = filterTicket;
                 }
+                actualizarLista();
             }
 
             @Override
@@ -124,8 +157,33 @@ public class Activity_Tickets extends AppCompatActivity
 
     }
 
-    public void actualizarLista(String orden){
-        tickets = manager.obtenerTickets(orden);
+    public void popUpEliminarTicket(final Ticket ticket) {
+        // Use the Builder class for convenient dialog construction
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+
+        builder.setTitle("Eliminar Ticket");
+        builder.setMessage("¿Desea eliminar este Ticket?");
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                manager.eliminarTicketById(ticket.getIdTicket());
+                tickets = manager.obtenerTickets(orden);
+                actualizarLista();
+                longclick = false;
+                Toast.makeText(builder.getContext(),"Ticket eliminado con exito",Toast.LENGTH_LONG).show();
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        longclick = false;
+                    }
+                });
+        builder.show();
+    }
+
+    public void actualizarLista(){
 
         AdapterTicket adaptador = new AdapterTicket(this,tickets);
         lista.setAdapter(adaptador);
@@ -185,12 +243,15 @@ public class Activity_Tickets extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.fecha) {
-            actualizarLista("fecha,hora");
+            tickets = manager.obtenerTickets("fecha,hora");
+            actualizarLista();
         }else if(id == R.id.local){
-            actualizarLista("local,fecha,hora");
+            tickets = manager.obtenerTickets("local,fecha,hora");
+            actualizarLista();
             orden = "local";
         }else if(id == R.id.precio){
-            actualizarLista("total,local,fecha,hora");
+            tickets = manager.obtenerTickets("total,local,fecha,hora");
+            actualizarLista();
             orden = "total";
         }
 

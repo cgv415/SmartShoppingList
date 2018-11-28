@@ -58,8 +58,15 @@ public class DataBaseManager implements Database {
         if(!existeTablaProducto()){
             this.crearTablaLocal();
             this.crearTablaProducto();
+
             this.crearTablaCategoria();
             this.crearTablaSubcategoria();
+
+            Categoria c = new Categoria("sin categoria");
+            Subcategoria s = new Subcategoria("sin subcategoria");
+            insertarCategoria(c);
+            insertarSubcategoria(s,c);
+
             this.crearTablaProducto_Local();
             this.crearTablaProducto_Categoria();
             this.crearTablaProducto_Subcategoria();
@@ -347,16 +354,14 @@ public class DataBaseManager implements Database {
     private static final String CN_IDLISTA = "idlista";
     private static final String CN_IDCONJUNTO = "idconjunto";
 
-            /*todo CREACION TABLA PRODUCTO*/
+            /*TODO CREACION TABLA PRODUCTO*/
     private static final String CREATE_TABLE_PRODUCTO = "create table " + TABLE_PRODUCTO + "("
             + CN_ID + " integer primary key autoincrement,"
             + CN_NOMBRE + " text not null unique,"
             + CN_DESCRIPCION + " text,"
             + CN_ETIQUETA + " text,"
             + CN_CATEGORIA + " text,"
-            + CN_SUBCATEGORIA + " text,"
-            + CN_LOCAL + " text,"
-            + CN_MARCA + " text"
+            + CN_SUBCATEGORIA + " text"
             + ");";
 
     private ContentValues generarValoresProducto(Producto producto){
@@ -371,11 +376,6 @@ public class DataBaseManager implements Database {
         valores.put(CN_CATEGORIA, producto.getCategoria().getId());
         valores.put(CN_MARCA,producto.getMarca());
         valores.put(CN_SUBCATEGORIA, producto.getSubcategoria().getId());
-        if(producto.getLocal() != null){
-            valores.put(CN_LOCAL,producto.getLocal().getId());
-        }else{
-            valores.put(CN_LOCAL,"-1");
-        }
         return valores;
     }
 
@@ -412,8 +412,12 @@ public class DataBaseManager implements Database {
             local = obtenerLocal(producto.getLocal().getNombre());
             producto.setLocal(local);
         }*/
-        insertarProducto_Categoria(producto,producto.getCategoria());
-        insertarProducto_Subcategoria(producto,producto.getSubcategoria());
+        if(!producto.getCategoria().getNombre().equals("sin categoria")){
+            insertarProducto_Categoria(producto,producto.getCategoria());
+        }
+        if(!producto.getSubcategoria().getNombre().equals("sin subcategoria")){
+            insertarProducto_Subcategoria(producto,producto.getSubcategoria());
+        }
         /*if(producto.getLocal() != null){
             insertarProducto_Local(producto,producto.getLocal());
         }*/
@@ -568,16 +572,12 @@ public class DataBaseManager implements Database {
         return true;
     }
 
-            /*todo CREACION TABLA LOCAL*/
+            /*TODO CREACION TABLA LOCAL*/
 
     private static final String CREATE_TABLE_LOCAL = "create table " + TABLE_LOCAL + "("
             + CN_ID + " integer primary key autoincrement,"
             + CN_NOMBRE + " text not null unique,"
-            + CN_DIRECCION + " text,"
-            + CN_NIF + " text,"
-            + CN_WEB + " text,"
-            + CN_TLFN + " text,"
-            + CN_HORARIO + " text"
+            + CN_DESCRIPCION + " text"
             + ");";
 
     private ContentValues generarValoresLocal(Local local){
@@ -1882,6 +1882,10 @@ public class DataBaseManager implements Database {
     public boolean insertarFacts(Ticket ticket) {
         for (Producto producto :
                 ticket.getProductos()) {
+            if(producto.getId().equals("-1")){
+                long idProducto = insertarProducto(producto);
+                producto.setId(String.valueOf(idProducto));
+            }
             Fact fact = new Fact(ticket.getIdTicket(),producto.getId(),producto.getPrecio());
             db.insert(TABLE_FACT, null, generarValoresFact(fact));
         }

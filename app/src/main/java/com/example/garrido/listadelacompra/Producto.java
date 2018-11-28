@@ -17,15 +17,28 @@ public class Producto implements Comparable<Producto>,Parcelable{
 
 
     public Producto() {
+        this.nombre = "";
+        this.id = "-1";
+        this.categoria = new Categoria("sin categoria","1");
+        this.subcategoria = new Subcategoria("sin subcategoria","1");
+        this.etiqueta = "";
     }
 
     public Producto(String nombre) {
         this.nombre = nombre;
+        this.id = "-1";
+        this.categoria = new Categoria("sin categoria","1");
+        this.subcategoria = new Subcategoria("sin subcategoria","1");
+        this.etiqueta = "";
     }
 
     public Producto(String nombre, double precio){
         this.nombre = nombre;
         this.precio = precio;
+        this.id = "-1";
+        this.categoria = new Categoria("sin categoria","1");
+        this.subcategoria = new Subcategoria("sin subcategoria","1");
+        this.etiqueta = "";
     }
 
     protected Producto(Parcel in) {
@@ -160,6 +173,17 @@ public class Producto implements Comparable<Producto>,Parcelable{
             return -1;
         }else{
             return this.getNombre().compareTo(producto.getNombre());
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Producto p = (Producto) obj;
+
+        if(p.getId().equals(getId())){
+            return true;
+        }else{
+            return false;
         }
     }
 

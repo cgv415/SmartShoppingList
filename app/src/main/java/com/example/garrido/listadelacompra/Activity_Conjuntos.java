@@ -325,8 +325,11 @@ public class Activity_Conjuntos extends AppCompatActivity
                 conjunto.setNombre(etNombre.getText().toString());
                 conjunto.setDescripcion(etDescripcion.getText().toString());
 
-                long idConjunto = manager.insertarConjunto(conjunto);
+                manager.insertarConjunto(conjunto);
                 nombresConjuntos.add(conjunto.getNombre());
+
+                finish();
+                startActivity(getIntent());
 
             }
         })

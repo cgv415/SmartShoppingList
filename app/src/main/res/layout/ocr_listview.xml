@@ -9,9 +9,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginEnd="9dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="10dp"
         android:layout_toStartOf="@+id/et_precio"
         android:clickable="false"
-        android:hint="producto" />
+        android:hint="producto"
+        android:paddingBottom="5dp"
+        android:textSize="18sp" />
 
     <TextView
         android:id="@+id/et_precio"

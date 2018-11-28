@@ -49,15 +49,16 @@ public class OCR extends AppCompatActivity
     private ListView listView;
     private TextView tvFecha;
     private TextView tvHora;
-    private TextView tvPrecio;
     private TextView tvPagar;
     private Button btAceptar;
 
     private String local;
     private String fecha;
     private String hora;
+    private String total;
 
     final private String INSERTAR = "Insertar nuevo producto";
+    final private String PRECIO_TOTAL = "Precio total";
     private ArrayList<Producto> insertarProducto;
 
     private static final int RC_OCR_CAPTURE = 9003;
@@ -79,6 +80,14 @@ public class OCR extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         manager = new DataBaseManager(this);
+
+        FloatingActionButton fab_aceptar = findViewById(R.id.fab_aceptar);
+        fab_aceptar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                aceptarTicket();
+            }
+        });
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -119,6 +128,11 @@ public class OCR extends AppCompatActivity
         espacio.setPrecio(0.0);
         insertarProducto.add(espacio);
 
+        Producto precioTotal = new Producto();
+        precioTotal.setNombre(PRECIO_TOTAL);
+        precioTotal.setPrecio(0.0);
+        insertarProducto.add(precioTotal);
+
         Producto nuevoP = new Producto();
         nuevoP.setNombre(INSERTAR);
         nuevoP.setPrecio(0.0);
@@ -128,8 +142,6 @@ public class OCR extends AppCompatActivity
         tvLocal = findViewById(R.id.status_message);
         tvFecha = findViewById(R.id.et_fecha);
         tvHora = findViewById(R.id.et_hora);
-        tvPrecio = findViewById(R.id.et_precio);
-        tvPagar = findViewById(R.id.tv_pagar);
         listView = findViewById(R.id.lv_ticket);
 
         useFlash = findViewById(R.id.use_flash);
@@ -152,9 +164,13 @@ public class OCR extends AppCompatActivity
                 hora = mdformat.format(calendar.getTime());
                 tvHora.setText(hora);
 
-                local = manager.obtenerNombreLocales().get(0);
+                try{
+                    local = manager.obtenerNombreLocales().get(0);
+                }catch (Exception e){
+                    local = "";
+                }
+
                 tvLocal.setText(local);
-                tvPrecio.setText("0.0");
 
                 actualizarLista();
             }else{
@@ -170,29 +186,56 @@ public class OCR extends AppCompatActivity
                 hora = ticket.getHora();
                 tvHora.setText(hora);
 
-                tvPrecio.setText(String.format("%.2f",ticket.getTotal()));
+                String p = String.format("%.2f",ticket.getTotal());
+                p = p.replace(",",".");
 
                 useFlash.setVisibility(View.INVISIBLE);
 
+                insertarProducto.get(1).setPrecio(Double.parseDouble(p));
                 actualizarLista();
             }
         }else{
+            idTicket = "0";
             nombresProductos = bundle.getStringArrayList("productos");
+            ArrayList<Producto> productosExistentes = manager.obtenerProductos();
             ArrayList<Double> precios =(ArrayList<Double>) bundle.get("precios");
             datos = bundle.getStringArrayList("datos");
             productos = new ArrayList<>();
+
             for(int i = 0 ; i < nombresProductos.size() ; i ++){
                 int iprecio = nombresProductos.size() - precios.size();
                 if(i >= iprecio){
                     Producto pr = new Producto(nombresProductos.get(i),precios.get(i-iprecio));
+
+                    forProductos:
+                    for(int j = 0 ; j < productosExistentes.size(); j++){
+                        if(productosExistentes.get(j).getNombre().contains(nombresProductos.get(i)) ||
+                                nombresProductos.get(i).contains(productosExistentes.get(j).getNombre())){
+                            pr = productosExistentes.get(j);
+                            pr.setPrecio(precios.get(i-iprecio));
+                            break forProductos;
+                        }else{
+                            pr = new Producto(nombresProductos.get(i),precios.get(i-iprecio));
+                        }
+                    }
+
                     productos.add(pr);
                 }
             }
 
-            tvLocal.setText(datos.get(0));
-            tvFecha.setText(datos.get(1));
-            tvHora.setText(datos.get(2));
-            tvPrecio.setText(datos.get(3));
+            local = datos.get(0);
+            tvLocal.setText(local);
+
+            fecha = datos.get(1);
+            tvFecha.setText(fecha);
+
+            hora = datos.get(2);
+            tvHora.setText(hora);
+
+            total = datos.get(3);
+            insertarProducto.get(1).setPrecio(Double.parseDouble(total));
+            //TODO arreglar el precio
+
             tvPagar.setVisibility(View.VISIBLE);
 
             actualizarLista();
@@ -204,14 +247,13 @@ public class OCR extends AppCompatActivity
                 String nombre = productos.get(i).getNombre();
                 if(nombre.equals(INSERTAR)){
                     popUpInsertarProducto();
+                }else if(nombre.equals(PRECIO_TOTAL)){
+                    popUpPrecio();
                 }else if(!nombre.equals("")){
                     popUpProducto(productos.get(i));
                 }
             }
         });
-
-        btAceptar = findViewById(R.id.bt_aceptar_ticket);
-        btAceptar.setOnClickListener(this);
 
     }
 
@@ -219,54 +261,6 @@ public class OCR extends AppCompatActivity
     public void onClick(View v) {
         if(v == tvLocal || v == tvFecha || v == tvHora){
             popUpDatos();
-        }else if(v == tvPrecio){
-            popUpPrecio();
-        }else if (v == btAceptar) {
-            aceptarTicket();
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //Ya no sirve
-        if(requestCode == RC_OCR_CAPTURE) {
-            if (resultCode == CommonStatusCodes.SUCCESS) {
-                if (data != null) {
-                    nombresProductos = data.getStringArrayListExtra("productos");
-                    datos = data.getStringArrayListExtra("datos");
-                    productos = new ArrayList<>();
-                    for(int i = 0 ; i < nombresProductos.size() ; i ++){
-                        Producto pr = new Producto();
-                        StringTokenizer tokenizer = new StringTokenizer(nombresProductos.get(i),"\t");
-                        pr.setNombre(tokenizer.nextToken());
-                        productos.add(pr);
-                    }
-
-                    tvLocal.setText(datos.get(0));
-                    tvFecha.setText(datos.get(1));
-                    tvHora.setText(datos.get(2));
-                    tvPrecio.setText(datos.get(3));
-                    tvPagar.setVisibility(View.VISIBLE);
-
-                    AdapterContenidoTicket adapter = new AdapterContenidoTicket(this,productos);
-                    listView.setAdapter(adapter);
-
-                    /*String text = data.getStringExtra(OcrCaptureActivity.TextBlockObject);
-                    statusMessage.setText(R.string.ocr_success);
-                    //textValue.setText(text);
-                    Log.d(TAG, "Text read: " + text);
-                    */
-                } else {
-                    tvLocal.setText(R.string.ocr_failure);
-                    Log.d(TAG, "No Text captured, intent data is null");
-                }
-            } else {
-                tvLocal.setText(String.format(getString(R.string.ocr_error),
-                        CommonStatusCodes.getStatusCodeString(resultCode)));
-            }
-        }
-        else {
-            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -278,23 +272,13 @@ public class OCR extends AppCompatActivity
 
         final View v = inflater.inflate(R.layout.popup_datos_ticket, null);
 
-        final Spinner sp_local = v.findViewById(R.id.sp_locales);
+        final AutoCompleteTextView actv_local = v.findViewById(R.id.actv_local);
+        actv_local.setText(local);
         final ArrayList<String> locales = manager.obtenerNombreLocales();
         ArrayAdapter<String> adapter = new ArrayAdapter<String>
-                (this, android.R.layout.select_dialog_item, locales);
-        sp_local.setAdapter(adapter);
-        sp_local.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                local = locales.get(i);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
+                (this, android.R.layout.simple_dropdown_item_1line, locales);
+        actv_local.setAdapter(adapter);
+        actv_local.setThreshold(0);
 
         final TextView et_fecha = v.findViewById(R.id.tv_fecha);
         final TextView et_hora = v.findViewById(R.id.et_hora);
@@ -314,7 +298,6 @@ public class OCR extends AppCompatActivity
             }
         });
 
-        builder.setTitle("Modificar datos");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -325,7 +308,9 @@ public class OCR extends AppCompatActivity
                 tvHora.setText(et_hora.getText());
                 hora = tvHora.getText().toString();
 
-                tvLocal.setText(sp_local.getSelectedItem().toString());
+                local = actv_local.getText().toString();
+                tvLocal.setText(local);
+
 
             }
         })
@@ -453,17 +438,18 @@ public class OCR extends AppCompatActivity
         final EditText et_precio_ticket = v.findViewById(R.id.et_precio_ticket);
 
 
-        et_precio_ticket.setText(tvPrecio.getText());
-
-
-
-        builder.setTitle("Modificar precio");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                tvPrecio.setText(et_precio_ticket.getText());
 
+                int pos = productos.size()-2;
 
+                Producto pro = productos.get(pos);
+                String pre = et_precio_ticket.getText().toString();
+                pre = pre.replace(",",".");
+                pro.setPrecio(Double.parseDouble(pre));
+
+                productos.set(pos,pro);
             }
         })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -511,7 +497,11 @@ public class OCR extends AppCompatActivity
                 producto.setNombre(at_nombre_producto.getText().toString());
                 try{
                     producto.setPrecio(Double.parseDouble(et_precio_producto.getText().toString()));
-                    actualizarPrecio();
+                    if(!producto.getNombre().equals(PRECIO_TOTAL)){
+                        actualizarPrecio();
+                    }else{
+                        total = String.valueOf(producto.getPrecio());
+                    }
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -644,11 +634,21 @@ public class OCR extends AppCompatActivity
         if(idTicket.equals("0")) {
             try {
                 Ticket ticket = new Ticket();
-                ticket.setHora(hora);
-                ticket.setFecha(fecha);
-                Local l = manager.obtenerLocal(local);
+                ticket.setHora(tvHora.getText().toString());
+                ticket.setFecha(tvFecha.getText().toString());
+
+                Local l = manager.obtenerLocal(tvLocal.getText().toString());
+                if(l.getId().equals("-1")){
+                    l.setNombre(tvLocal.getText().toString());
+                    long id = manager.insertarLocal(l);
+                    l.setId(String.valueOf(id));
+                }
                 ticket.setLocal(l);
-                ticket.setTotal(Double.parseDouble(tvPrecio.getText().toString()));
+
+
+                String precio = total.replace(",", ".");
+                ticket.setTotal(Double.parseDouble(precio));
+
                 ArrayList<Producto> productosTicket = new ArrayList<>();
                 productosTicket.addAll(productos);
                 productosTicket.removeAll(insertarProducto);
@@ -660,6 +660,7 @@ public class OCR extends AppCompatActivity
                 activityTickets();
 
             } catch (Exception e) {
+                Toast.makeText(this,"El precio no es correcto",Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
         }else{
@@ -668,7 +669,7 @@ public class OCR extends AppCompatActivity
             ticket.setFecha(fecha);
             Local l = manager.obtenerLocal(local);
             ticket.setLocal(l);
-            ticket.setTotal(Double.parseDouble(tvPrecio.getText().toString()));
+            ticket.setTotal(Double.parseDouble(total));
 
             ArrayList<Producto> productosTicket = new ArrayList<>();
             productosTicket.addAll(productos);
@@ -680,6 +681,7 @@ public class OCR extends AppCompatActivity
 
         }
     }
+
 
     public void nuevoProductoEnLista(){
         productos.removeAll(insertarProducto);
@@ -697,9 +699,17 @@ public class OCR extends AppCompatActivity
     public void actualizarPrecio(){
         double precio = 0.0;
         for(Producto producto:productos){
-            precio+=producto.getPrecio();
+            if(!insertarProducto.contains(producto)){
+                precio+=producto.getPrecio();
+            }
         }
-        tvPrecio.setText(String.format("%.2f",precio));
+        total = String.valueOf(precio);
+        Producto pr = insertarProducto.get(1);
+        pr.setPrecio(precio);
+        insertarProducto.set(1,pr);
+
+        String p = String.format("%.2f",precio);
+        p = p.replace(",",".");
     }
 
     @Override

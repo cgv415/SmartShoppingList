@@ -6,9 +6,17 @@ import java.util.TreeMap;
 public class Local {
     private String id;
     private String nombre;
+    private String descripcion;
 
     private ArrayList<Producto> productos;
 
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
     public Local() {
         nombre = "";

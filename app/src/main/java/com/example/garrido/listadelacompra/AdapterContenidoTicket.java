@@ -11,6 +11,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class AdapterContenidoTicket extends BaseAdapter {
     private Activity activity;
@@ -48,7 +49,12 @@ public class AdapterContenidoTicket extends BaseAdapter {
         TextView precio = v.findViewById(R.id.et_precio);
 
         String stNombre = productos.get(i).getNombre();
-        String stPrecio = productos.get(i).getPrecio().toString();
+        String stPrecio = "";
+        try{
+             stPrecio = productos.get(i).getPrecio().toString();
+        }catch (Exception e){
+            stPrecio = "?";
+        }
 
 
         if(!stNombre.equals("")){
@@ -56,7 +62,6 @@ public class AdapterContenidoTicket extends BaseAdapter {
         }else{
             producto.setText(" ");
         }
-
 
         if(!stNombre.equals("") && !stNombre.equals("Insertar nuevo producto")){
             precio.setText(stPrecio);

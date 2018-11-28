@@ -53,7 +53,9 @@ public class AdapterTicket extends BaseAdapter {
 
         Ticket t = tickets.get(i);
         nombre.setText(t.getLocal().getNombre());
-        precio.setText(String.format("%.2f",t.getTotal()));
+        String p = String.format("%.2f",t.getTotal());
+        p = p.replace(",",".");
+        precio.setText(p);
         fecha.setText(t.getFecha());
         hora.setText(t.getHora());
 

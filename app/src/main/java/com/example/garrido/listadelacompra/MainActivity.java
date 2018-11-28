@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -70,6 +71,14 @@ public class MainActivity extends AppCompatActivity
 
         manager = new DataBaseManager(this);
         manager.actualizar();
+
+        FloatingActionButton calcular = findViewById(R.id.fab_calcular);
+        calcular.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                popUpElegirLocal();
+            }
+        });
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -336,6 +345,84 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    public void popUpElegirLocal(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_elegir_local, null);
+        ArrayList<String> nombresLocales = manager.obtenerNombreLocales();
+        final Spinner sp_local = v.findViewById(R.id.sp_local);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,nombresLocales);
+
+        sp_local.setAdapter(adapter);
+
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String nombreLocal =sp_local.getSelectedItem().toString();
+                calcular(nombreLocal);
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void calcular(String nombreLocal){
+        double total = 0.0;
+
+        Local l = manager.obtenerLocal(nombreLocal);
+        ArrayList<Producto> productos_local = manager.obtenerLocal_Productos(l);
+
+        for(int i = 0 ; i < productos_local.size() ; i++){
+            Producto producto = productos_local.get(i);
+            if(productos.contains(producto)){
+                total += producto.getPrecio();
+                productos.get(i).setPrecio(producto.getPrecio());
+            }
+        }
+
+        for(int i = 0 ; i < productos.size(); i++){
+            Producto producto = productos.get(i);
+            if(!productos_local.contains(producto)){
+                productos.get(i).setPrecio(null);
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_lista_calcular, null);
+        Button b = v.findViewById(R.id.btn_header);
+        b.setText(nombreLocal);
+
+        ArrayList<Producto> productosCalculados = productos;
+        final Producto productoTotal = new Producto("Total",total);
+        if(!productosCalculados.contains(productoTotal)){
+            productosCalculados.add(productoTotal);
+        }else{
+            int pos = productosCalculados.indexOf(productoTotal);
+            productosCalculados.set(pos,productoTotal);
+        }
+
+        final ListView lv_calcular = v.findViewById(R.id.lv_calcular);
+        AdapterContenidoTicket ad = new AdapterContenidoTicket(this,productos);
+
+        lv_calcular.setAdapter(ad);
+
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                productos.remove(productoTotal);
+            }
+        });
+        builder.show();
+    }
+
     public void popUpInsertarLista(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -352,13 +439,20 @@ public class MainActivity extends AppCompatActivity
             public void onClick(DialogInterface dialog, int id) {
                 lista.setNombre(etNombre.getText().toString());
                 lista.setDescripcion(etDescripcion.getText().toString());
-                lista.setPrincipal(true);
+                if(manager.obtenerListas().size() > 0){
+                    lista.setPrincipal(cbPrincipal.isChecked());
+                }else{
+                    lista.setPrincipal(true);
+                }
 
                 long idLista = manager.insertarLista(lista);
                 lista.setId(String.valueOf(idLista));
 
-                setTitle(lista.getNombre());
-                actualizarLista();
+                //setTitle(lista.getNombre());
+                //actualizarLista();
+
+                finish();
+                startActivity(getIntent());
 
             }
         })
@@ -430,6 +524,8 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarLista(lista);
+                finish();
+                startActivity(getIntent());
 
             }
         })
@@ -466,6 +562,8 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
 
+                        ArrayList<Producto> antiguosProductos = (ArrayList<Producto>) lista.getProductos().clone();
+
                         StringTokenizer tokenizer = new StringTokenizer(buscadorInsertar.getText().toString(),t.toString());
                         while(tokenizer.hasMoreTokens()){
                             String token = tokenizer.nextToken();
@@ -476,7 +574,9 @@ public class MainActivity extends AppCompatActivity
                         }
                         for(int i = 0 ; i < lista.getProductos().size() ; i++){
                             Producto producto = lista.getProductos().get(i);
-                            manager.insertarProducto_Lista(producto,lista);
+                            if(!antiguosProductos.contains(producto)){
+                                manager.insertarProducto_Lista(producto,lista);
+                            }
                         }
                         actualizarLista();
                         Toast.makeText(getApplicationContext(),buscadorInsertar.getText().toString(),Toast.LENGTH_LONG).show();

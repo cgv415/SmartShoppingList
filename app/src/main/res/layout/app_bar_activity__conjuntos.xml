@@ -20,7 +20,9 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_activity__conjuntos" />
+    <include
+        android:id="@+id/include"
+        layout="@layout/content_activity__conjuntos" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -36,6 +38,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
         android:layout_margin="@dimen/fab_margin"
+        app:layout_anchor="@+id/include"
+        app:layout_anchorGravity="left|bottom"
         app:srcCompat="@drawable/ic_copy" />
 
 </android.support.design.widget.CoordinatorLayout>

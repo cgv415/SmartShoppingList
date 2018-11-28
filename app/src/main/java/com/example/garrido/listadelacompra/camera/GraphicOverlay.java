@@ -460,7 +460,7 @@ public class GraphicOverlay<T extends GraphicOverlay.Graphic> extends View {
                 if(itMap.hasNext()){
                     text = text.toLowerCase() + "\t";
                 }else{
-                    bloques.add(text);
+                    bloques.add(text.toLowerCase());
                 }
 
             }

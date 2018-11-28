@@ -58,7 +58,6 @@ public class Activity_Productos extends AppCompatActivity
     EditText etNombre;
     EditText etDescripcion;
     EditText etEtiqueta;
-    EditText etMarca;
 
     Spinner spTipo;
     Spinner spCategoria;
@@ -87,6 +86,9 @@ public class Activity_Productos extends AppCompatActivity
                 popUpInsertarProducto();
             }
         });
+
+        FloatingActionButton calcule = findViewById(R.id.fab_calcular);
+        calcule.setVisibility(View.GONE);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -456,7 +458,6 @@ public class Activity_Productos extends AppCompatActivity
                     if(!etNombre.getText().toString().equals("")){
                         producto.setNombre(etNombre.getText().toString().toLowerCase());
                         producto.setDescripcion(etDescripcion.getText().toString());
-                        producto.setMarca(etMarca.getText().toString().toLowerCase());
                         producto.setEtiqueta(etEtiqueta.getText().toString().toLowerCase());
                         Categoria categoria = manager.obtenerCategoria(spCategoria.getSelectedItem().toString());
                         producto.setCategoria(categoria);
@@ -578,7 +579,6 @@ public class Activity_Productos extends AppCompatActivity
                 if(!etNombre.getText().toString().equals("")){
                     producto.setNombre(etNombre.getText().toString().toLowerCase());
                     producto.setDescripcion(etDescripcion.getText().toString());
-                    producto.setMarca(etMarca.getText().toString().toLowerCase());
                     producto.setEtiqueta(etEtiqueta.getText().toString().toLowerCase());
                     Categoria categoria = manager.obtenerCategoria(spCategoria.getSelectedItem().toString());
                     producto.setCategoria(categoria);

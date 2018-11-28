@@ -79,7 +79,7 @@ public class Activity_Local extends AppCompatActivity
             local = new Local();
             local.setNombre("");
             local.setProductos(new ArrayList<Producto>());
-            setTitle("Conjuntos");
+            setTitle("Sin locales");
         }
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -88,6 +88,9 @@ public class Activity_Local extends AppCompatActivity
                 popUpInsertarProductoEnLocal();
             }
         });
+
+        FloatingActionButton calcule = findViewById(R.id.fab_calcular);
+        calcule.setVisibility(View.GONE);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -372,10 +375,13 @@ public class Activity_Local extends AppCompatActivity
             public void onClick(DialogInterface dialog, int id) {
                 Local local = new Local();
                 local.setNombre(etNombre.getText().toString());
-                //conjunto.setDescripcion(etDescripcion.getText().toString());
+                local.setDescripcion(etDescripcion.getText().toString());
 
-                long idConjunto = manager.insertarLocal(local);
+                manager.insertarLocal(local);
                 nombreLocales.add(local.getNombre());
+
+                finish();
+                startActivity(getIntent());
 
             }
         })

@@ -14,14 +14,20 @@ public class Categoria implements Comparable<Categoria>{
         this.nombre = nombre;
     }
 
-    public String getId() {
-        return id;
+    public Categoria(String id, String nombre) {
+        this.id = id;
+        this.nombre = nombre;
     }
 
     public Categoria() {
-        nombre = "";
+        nombre = "sin categoria";
+        this.id = "1";
         subcategorias = new ArrayList<>();
         productos = new ArrayList<>();
+    }
+
+    public String getId() {
+        return id;
     }
 
     public void setId(String id) {

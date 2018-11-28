@@ -356,16 +356,36 @@ public final class OcrCaptureActivity extends AppCompatActivity {
             }
         }
 
+        bptotal:
         for(String bloque:bloques){
             if(bloque.toLowerCase().contains("total")){
-               /* StringTokenizer tokenizer = new StringTokenizer(bloque,"\n");
-                while(tokenizer.hasMoreTokens()){
-                    String y = tokenizer.nextToken();
-                    StringTokenizer total = new StringTokenizer(y," ");
+                StringTokenizer tokenizer1 = new StringTokenizer(bloque,"\t");
+                while(tokenizer1.hasMoreTokens()){
+                    String token1 = tokenizer1.nextToken();
+
+                    StringTokenizer tokenizer2 = new StringTokenizer(token1,"\n");
+                    while(tokenizer2.hasMoreTokens()){
+                        String token2 = tokenizer2.nextToken();
+                        if(token2.toLowerCase().contains("total")){
+                            StringTokenizer tokenizer3 = new StringTokenizer(token2," ");
+                            while(tokenizer3.hasMoreTokens()){
+                                try {
+                                    String dob = tokenizer3.nextToken();
+                                    dob = dob.replace(",", ".");
+                                    double precio = Double.parseDouble(dob);
+                                    total = String.valueOf(precio);
+                                    break bptotal;
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                /*    StringTokenizer total = new StringTokenizer(y," ");
                     while(total.hasMoreTokens()){
                         String x = tokenizer.nextToken();
-                    }
-                }*/
+                    }*/
+                }
                 total = bloque;
             }
         }
@@ -451,8 +471,8 @@ public final class OcrCaptureActivity extends AppCompatActivity {
             }
             if(p.getNombre().equals("") ){
                 p.setNombre(nombreProducto);
-                productos.add(p);
             }
+            productos.add(p);
         }
 
         StringTokenizer tokenPrecios = new StringTokenizer(bloquePrecios,"\t");
@@ -486,7 +506,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                 datos.add(local.getNombre());
                 datos.add(fecha);
                 datos.add(hora);
-                datos.add(String.valueOf("0.0"));
+                datos.add(total);
                 Intent data = new Intent(this,OCR.class);
                 data.putExtra("productos", nombresProductos);
                 data.putExtra("precios", precios);

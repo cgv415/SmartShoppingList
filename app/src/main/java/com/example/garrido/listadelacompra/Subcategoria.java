@@ -11,10 +11,17 @@ public class Subcategoria {
 
     public Subcategoria(String nombre) {
         this.nombre = nombre;
+        productos = new ArrayList<>();
+    }
+
+    public Subcategoria(String id, String nombre) {
+        this.id = id;
+        this.nombre = nombre;
     }
 
     public Subcategoria() {
         nombre = "";
+        this.id = "1";
         productos = new ArrayList<>();
     }
 
