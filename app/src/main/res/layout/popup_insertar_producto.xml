@@ -40,20 +40,12 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp" />
 
-    <Spinner
-        android:id="@+id/sp_subcategoria"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/sp_categoria"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp" />
-
     <EditText
         android:id="@+id/et_alias"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/sp_subcategoria"
+        android:layout_below="@+id/sp_categoria"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:ems="10"

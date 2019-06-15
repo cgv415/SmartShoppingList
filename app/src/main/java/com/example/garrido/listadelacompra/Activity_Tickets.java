@@ -21,7 +21,10 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -34,7 +37,7 @@ public class Activity_Tickets extends AppCompatActivity
     ListView lista;
     ArrayList<Ticket> tickets;
     AutoCompleteTextView buscadorTickets;
-    String orden = "fecha,hora";
+    String orden = "ano,mes,dia,hora";
     boolean longclick = false;
 
     @Override
@@ -116,7 +119,7 @@ public class Activity_Tickets extends AppCompatActivity
                 arrayBuscador.add(String.valueOf(ticket.getTotal()));
             }
         }
-        ArrayAdapter<String> adapterBuscador = new ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,arrayBuscador);
+        ArrayAdapter adapterBuscador = new ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,arrayBuscador);
         buscadorTickets.setAdapter(adapterBuscador);
 
         buscadorTickets.addTextChangedListener(new TextWatcher() {
@@ -160,19 +163,23 @@ public class Activity_Tickets extends AppCompatActivity
     public void popUpEliminarTicket(final Ticket ticket) {
         // Use the Builder class for convenient dialog construction
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
 
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
 
-        builder.setTitle("Eliminar Ticket");
-        builder.setMessage("¿Desea eliminar este Ticket?");
+        final Button header = v.findViewById(R.id.btn_header);
+        header.setText("Eliminar Ticket");
+        final TextView mensaje = v.findViewById(R.id.tv_mensaje);
+        mensaje.setText("¿Desea eliminar este Ticket?");
+        builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarTicketById(ticket.getIdTicket());
                 tickets = manager.obtenerTickets(orden);
                 actualizarLista();
                 longclick = false;
-                Toast.makeText(builder.getContext(),"Ticket eliminado con exito",Toast.LENGTH_LONG).show();
+                Toast.makeText(v.getContext(),"Ticket eliminado con exito",Toast.LENGTH_LONG).show();
             }
         })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -191,6 +198,36 @@ public class Activity_Tickets extends AppCompatActivity
 
     public void popUp() {
         // Use the Builder class for convenient dialog construction
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_crear_ticket, null);
+
+        final Switch flash = v.findViewById(R.id.sw_flash);
+
+        final Button escanear = v.findViewById(R.id.btn_escanear);
+        escanear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(v.getContext(), OcrCaptureActivity.class);
+                intent.putExtra(OcrCaptureActivity.AutoFocus, true);
+                intent.putExtra(OcrCaptureActivity.UseFlash, flash.isChecked());
+                startActivity(intent);
+            }
+        });
+        final Button manual = v.findViewById(R.id.btn_manual);
+        manual.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(),OCR.class);
+                intent.putExtra("status",1);
+                intent.putExtra("idTicket","0");
+                startActivity(intent);
+            }
+        });
+        builder.setView(v);
+        builder.show();
+        /*
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -213,7 +250,8 @@ public class Activity_Tickets extends AppCompatActivity
                 }
             }
         });
-        builder.show();
+
+        builder.show();*/
     }
 
     @Override
@@ -243,14 +281,14 @@ public class Activity_Tickets extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.fecha) {
-            tickets = manager.obtenerTickets("fecha,hora");
+            tickets = manager.obtenerTickets("ano,mes,dia,hora");
             actualizarLista();
         }else if(id == R.id.local){
-            tickets = manager.obtenerTickets("local,fecha,hora");
+            tickets = manager.obtenerTickets("local,ano,mes,dia,hora");
             actualizarLista();
             orden = "local";
         }else if(id == R.id.precio){
-            tickets = manager.obtenerTickets("total,local,fecha,hora");
+            tickets = manager.obtenerTickets("total,local,ano,mes,dia,hora");
             actualizarLista();
             orden = "total";
         }

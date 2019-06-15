@@ -169,79 +169,83 @@ public class Activity_Import extends AppCompatActivity
 
     public String exportar(String opcion){
         String exportado = "";
-        switch (opcion){
-            case "Sub/Categorias":
-                exportado += "'categoria':{";
-                ArrayList<Categoria> categorias = manager.obtenerCategorias();
-                Categoria finCategorias = categorias.get(categorias.size()-1);
-                for(Categoria categoria : categorias){
-                    exportado += categoria.toJSON();
-                    if(!finCategorias.getNombre().equals(categoria.getNombre())){
-                        exportado += ",";
+        try{
+            switch (opcion){
+                case "Categorias":
+                    exportado += "'categoria':{";
+                    ArrayList<Categoria> categorias = manager.obtenerCategorias();
+                    Categoria finCategorias = categorias.get(categorias.size()-1);
+                    for(Categoria categoria : categorias){
+                        exportado += categoria.toJSON();
+                        if(!finCategorias.getNombre().equals(categoria.getNombre())){
+                            exportado += ",";
+                        }
                     }
-                }
-                exportado += "}";
-                break;
-            case "Productos":
-                exportado += "'producto':{";
-                ArrayList<Producto> productos = manager.obtenerProductos();
-                Producto finProductos = productos.get(productos.size()-1);
-                for(Producto producto : productos){
-                    exportado += producto.toJSON();
-                    if(!finProductos.getNombre().equals(producto.getNombre())){
-                        exportado += ",";
+                    exportado += "}";
+                    break;
+                case "Productos":
+                    exportado += "'producto':{";
+                    ArrayList<Producto> productos = manager.obtenerProductos();
+                    Producto finProductos = productos.get(productos.size()-1);
+                    for(Producto producto : productos){
+                        exportado += producto.toJSON();
+                        if(!finProductos.getNombre().equals(producto.getNombre())){
+                            exportado += ",";
+                        }
                     }
-                }
-                exportado += "}";
-                break;
-            case "Listas":
-                exportado += "'lista':{";
-                ArrayList<Lista> listas = manager.obtenerListas();
-                Lista finListas = listas.get(listas.size()-1);
-                for(Lista lista : listas){
-                    exportado += lista.toJSON();
-                    if(!finListas.getNombre().equals(lista.getNombre())){
-                        exportado += ",";
+                    exportado += "}";
+                    break;
+                case "Listas":
+                    exportado += "'lista':{";
+                    ArrayList<Lista> listas = manager.obtenerListas();
+                    Lista finListas = listas.get(listas.size()-1);
+                    for(Lista lista : listas){
+                        exportado += lista.toJSON();
+                        if(!finListas.getNombre().equals(lista.getNombre())){
+                            exportado += ",";
+                        }
                     }
-                }
-                exportado += "}";
-                break;
-            case "Conjuntos":
-                exportado += "'conjunto':{";
-                ArrayList<Conjunto> conjuntos = manager.obtenerConjuntos();
-                Conjunto finConjuntos = conjuntos.get(conjuntos.size()-1);
-                for(Conjunto conjunto:conjuntos){
-                    exportado += conjunto.toJSON();
-                    if(!finConjuntos.getNombre().equals(conjunto.getNombre())){
-                        exportado += ",";
+                    exportado += "}";
+                    break;
+                case "Conjuntos":
+                    exportado += "'conjunto':{";
+                    ArrayList<Conjunto> conjuntos = manager.obtenerConjuntos();
+                    Conjunto finConjuntos = conjuntos.get(conjuntos.size()-1);
+                    for(Conjunto conjunto:conjuntos){
+                        exportado += conjunto.toJSON();
+                        if(!finConjuntos.getNombre().equals(conjunto.getNombre())){
+                            exportado += ",";
+                        }
                     }
-                }
-                exportado += "}";
-                break;
-            case "Locales":
-                exportado += "'local':{";
-                ArrayList<Local> locales = manager.obtenerLocales();
-                Local finLocales = locales.get(locales.size()-1);
-                for(Local local:locales){
-                    exportado += local.toJSON();
-                    if(!finLocales.getNombre().equals(local.getNombre())){
-                        exportado += ",";
+                    exportado += "}";
+                    break;
+                case "Locales":
+                    exportado += "'local':{";
+                    ArrayList<Local> locales = manager.obtenerLocales();
+                    Local finLocales = locales.get(locales.size()-1);
+                    for(Local local:locales){
+                        exportado += local.toJSON();
+                        if(!finLocales.getNombre().equals(local.getNombre())){
+                            exportado += ",";
+                        }
                     }
-                }
-                exportado += "}";
-                break;
-            case "Tickets":
-                exportado += "'ticket':{";
-                ArrayList<Ticket> tickets = manager.obtenerTickets("fecha");
-                Ticket finTickets = tickets.get(tickets.size()-1);
-                for(Ticket ticket:tickets){
-                    exportado += ticket.toJSON();
-                    if(!finTickets.getIdTicket().equals(ticket.getIdTicket())){
-                        exportado += ",";
+                    exportado += "}";
+                    break;
+                case "Tickets":
+                    exportado += "'ticket':{";
+                    ArrayList<Ticket> tickets = manager.obtenerTickets("fecha");
+                    Ticket finTickets = tickets.get(tickets.size()-1);
+                    for(Ticket ticket:tickets){
+                        exportado += ticket.toJSON();
+                        if(!finTickets.getIdTicket().equals(ticket.getIdTicket())){
+                            exportado += ",";
+                        }
                     }
-                }
-                exportado += "}";
-                break;
+                    exportado += "}";
+                    break;
+            }
+        }catch (Exception e){
+            exportado += "}";
         }
 
         return exportado;
@@ -290,35 +294,23 @@ public class Activity_Import extends AppCompatActivity
                 JSONObject value = (JSONObject) object.get(key);
                 ArrayList<Producto> productos;
                 JSONArray jsonArray;
-                switch (key){
+                switch (key) {
                     case "categoria":
                         jsonArray = value.names();
 
                         ArrayList<Categoria> categorias = new ArrayList<>();
-                        for(int i = 0; i < jsonArray.length(); i++){
-                            ArrayList<Subcategoria> subcategorias = new ArrayList<>();
-                            Categoria categoria = new Categoria();
-
+                        for (int i = 0; i < jsonArray.length(); i++) {
                             String nombreCategoria = (String) jsonArray.get(i);
-                            JSONArray nombresSubcategorias = value.getJSONArray(nombreCategoria);
-                            for(int j = 0; j <nombresSubcategorias.length(); j++){
-                                String nombreSub = (String) nombresSubcategorias.get(j);
-                                Subcategoria subcategoria = new Subcategoria(nombreSub);
-                                subcategorias.add(subcategoria);
-                            }
+                            Categoria categoria = new Categoria();
                             categoria.setNombre(nombreCategoria);
-                            categoria.setSubcategorias(subcategorias);
 
                             categorias.add(categoria);
                         }
 
                         for(Categoria categoria: categorias) {
                             manager.insertarCategoria(categoria);
-                            ArrayList<Subcategoria> subcategorias = categoria.getSubcategorias();
-                            for (Subcategoria subcategoria : subcategorias) {
-                                manager.insertarSubcategoria(subcategoria,categoria);
-                            }
                         }
+
                         break;
                     case "producto":
                         jsonArray = value.names();
@@ -331,15 +323,10 @@ public class Activity_Import extends AppCompatActivity
                             String nombreCategoria = JSONproducto.getString("categoria");
                             Categoria categoria = manager.obtenerCategoria(nombreCategoria);
 
-                            String nombreSubcategoria = JSONproducto.getString("subcategoria");
-                            Subcategoria subcategoria = manager.obtenerSubcategoria(nombreSubcategoria);
-
                             producto.setNombre(nombreProducto);
                             producto.setDescripcion(JSONproducto.getString("descripcion"));
                             producto.setEtiqueta(JSONproducto.getString("etiqueta"));
-                            producto.setMarca(JSONproducto.getString("marca"));
                             producto.setCategoria(categoria);
-                            producto.setSubcategoria(subcategoria);
 
                             productos.add(producto);
                         }
@@ -358,6 +345,8 @@ public class Activity_Import extends AppCompatActivity
 
                             lista.setNombre(nombreLista);
                             lista.setDescripcion(JSONLista.getString("descripcion"));
+
+
                             lista.setPrincipal(JSONLista.getBoolean("principal"));
 
                             JSONObject JSONProductos = JSONLista.getJSONObject("producto");
@@ -371,15 +360,11 @@ public class Activity_Import extends AppCompatActivity
                                 String nombreCategoria = JSONproducto.getString("categoria");
                                 Categoria categoria = manager.obtenerCategoria(nombreCategoria);
 
-                                String nombreSubcategoria = JSONproducto.getString("subcategoria");
-                                Subcategoria subcategoria = manager.obtenerSubcategoria(nombreSubcategoria);
 
                                 producto.setNombre(nombreProducto);
                                 producto.setDescripcion(JSONproducto.getString("descripcion"));
                                 producto.setEtiqueta(JSONproducto.getString("etiqueta"));
-                                producto.setMarca(JSONproducto.getString("marca"));
                                 producto.setCategoria(categoria);
-                                producto.setSubcategoria(subcategoria);
 
                                 productos.add(producto);
                             }
@@ -414,15 +399,11 @@ public class Activity_Import extends AppCompatActivity
                                 String nombreCategoria = JSONproducto.getString("categoria");
                                 Categoria categoria = manager.obtenerCategoria(nombreCategoria);
 
-                                String nombreSubcategoria = JSONproducto.getString("subcategoria");
-                                Subcategoria subcategoria = manager.obtenerSubcategoria(nombreSubcategoria);
 
                                 producto.setNombre(nombreProducto);
                                 producto.setDescripcion(JSONproducto.getString("descripcion"));
                                 producto.setEtiqueta(JSONproducto.getString("etiqueta"));
-                                producto.setMarca(JSONproducto.getString("marca"));
                                 producto.setCategoria(categoria);
-                                producto.setSubcategoria(subcategoria);
 
                                 productos.add(producto);
                             }

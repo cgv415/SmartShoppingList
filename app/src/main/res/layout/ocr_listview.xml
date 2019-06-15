@@ -15,6 +15,7 @@
         android:clickable="false"
         android:hint="producto"
         android:paddingBottom="5dp"
+        android:paddingLeft="10dp"
         android:textSize="18sp" />
 
     <TextView

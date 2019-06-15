@@ -10,7 +10,6 @@ public class Producto implements Comparable<Producto>,Parcelable{
     private String descripcion;
     private String etiqueta;
     private Categoria categoria;
-    private Subcategoria subcategoria;
     private Local local;
     private String marca;
     private Double precio;
@@ -19,16 +18,14 @@ public class Producto implements Comparable<Producto>,Parcelable{
     public Producto() {
         this.nombre = "";
         this.id = "-1";
-        this.categoria = new Categoria("sin categoria","1");
-        this.subcategoria = new Subcategoria("sin subcategoria","1");
+        this.categoria = new Categoria("1","sin categoria");
         this.etiqueta = "";
     }
 
     public Producto(String nombre) {
         this.nombre = nombre;
         this.id = "-1";
-        this.categoria = new Categoria("sin categoria","1");
-        this.subcategoria = new Subcategoria("sin subcategoria","1");
+        this.categoria = new Categoria("1","sin categoria");
         this.etiqueta = "";
     }
 
@@ -36,8 +33,7 @@ public class Producto implements Comparable<Producto>,Parcelable{
         this.nombre = nombre;
         this.precio = precio;
         this.id = "-1";
-        this.categoria = new Categoria("sin categoria","1");
-        this.subcategoria = new Subcategoria("sin subcategoria","1");
+        this.categoria = new Categoria("1","sin categoria");
         this.etiqueta = "";
     }
 
@@ -74,25 +70,23 @@ public class Producto implements Comparable<Producto>,Parcelable{
         this.marca = marca;
     }
 
-    public Producto(String id, String nombre, String descripcion, String etiqueta, Categoria categoria, Subcategoria subcategoria, Local local, String marca, Double precio) {
+    public Producto(String id, String nombre, String descripcion, String etiqueta, Categoria categoria, Local local, String marca, Double precio) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.etiqueta = etiqueta;
         this.categoria = categoria;
-        this.subcategoria = subcategoria;
         this.local = local;
         this.marca = marca;
         this.precio = precio;
     }
 
-    public Producto(String nombre, String descripcion, String etiqueta, Categoria categoria, Subcategoria subcategoria, Local local, String marca, Double precio) {
+    public Producto(String nombre, String descripcion, String etiqueta, Categoria categoria, Local local, String marca, Double precio) {
 
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.etiqueta = etiqueta;
         this.categoria = categoria;
-        this.subcategoria = subcategoria;
         this.local = local;
         this.marca = marca;
         this.precio = precio;
@@ -138,14 +132,6 @@ public class Producto implements Comparable<Producto>,Parcelable{
         this.categoria = categoria;
     }
 
-    public Subcategoria getSubcategoria() {
-        return subcategoria;
-    }
-
-    public void setSubcategoria(Subcategoria subcategoria) {
-        this.subcategoria = subcategoria;
-    }
-
     public Local getLocal() {
         return local;
     }
@@ -180,7 +166,7 @@ public class Producto implements Comparable<Producto>,Parcelable{
     public boolean equals(Object obj) {
         Producto p = (Producto) obj;
 
-        if(p.getId().equals(getId())){
+        if(p.getNombre().equals(getNombre())){
             return true;
         }else{
             return false;
@@ -205,9 +191,7 @@ public class Producto implements Comparable<Producto>,Parcelable{
         return "'" + nombre + "': {descripcion:'" +
                 descripcion + "',etiqueta: '" +
                 etiqueta + "',categoria: '" +
-                categoria.getNombre() + "',subcategoria: '" +
-                subcategoria.getNombre() + "',marca: '" +
-                marca +
+                categoria.getNombre() +
                 "'}";
     }
 

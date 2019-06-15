@@ -14,28 +14,21 @@
         android:layout_height="467dp"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/ac_productos"
-        android:layout_marginTop="-4dp"
+        android:layout_marginTop="10dp"
         android:indicatorRight="?android:attr/expandableListPreferredItemIndicatorRight" />
 
     <AutoCompleteTextView
         android:id="@+id/ac_productos"
-        android:layout_width="192dp"
+        android:layout_width="374dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:hint="producto"
+        android:hint="producto, categoria o etiqueta"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         tools:layout_editor_absoluteY="0dp" />
 
-    <Spinner
-        android:id="@+id/sp_tipo"
-        android:layout_width="195dp"
-        android:layout_height="45dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="192dp" />
 </RelativeLayout>

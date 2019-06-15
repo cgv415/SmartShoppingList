@@ -25,17 +25,6 @@
         android:textAlignment="center"
         android:textSize="24sp" />
 
-    <CheckBox
-        android:id="@+id/use_flash"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="19dp"
-        android:layout_marginEnd="109dp"
-        android:checked="false"
-        android:text="@string/use_flash" />
-
     <TextView
         android:id="@+id/et_fecha"
         android:layout_width="133dp"
@@ -74,5 +63,14 @@
         android:layout_alignParentTop="true"
         android:layout_marginTop="68dp"
         android:clickable="false" />
+
+    <Switch
+        android:id="@+id/sw_flash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="78dp"
+        android:text="Flash" />
 
 </RelativeLayout>

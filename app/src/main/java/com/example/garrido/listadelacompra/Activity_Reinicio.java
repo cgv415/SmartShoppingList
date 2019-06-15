@@ -98,14 +98,13 @@ public class Activity_Reinicio extends AppCompatActivity
             switch (check){
                 case "categoria":
                     manager.crearTablaCategoria();
-                    manager.crearTablaSubcategoria();
-                    manager.crearTablaCategoria_Subcategoria();
+                    manager.crearTablaProducto_Categoria();
+                    break;
                 case "producto":
                     manager.crearTablaProducto();
                     manager.crearTablaProducto_Local();
                     manager.crearTablaProducto_Conjunto();
                     manager.crearTablaProducto_Categoria();
-                    manager.crearTablaProducto_Subcategoria();
                     manager.crearTablaProducto_Lista();
                     manager.crearTablaFact();
 
@@ -116,15 +115,20 @@ public class Activity_Reinicio extends AppCompatActivity
                     break;
                 case "lista":
                     manager.crearTablaLista();
+                    manager.crearTablaProducto_Lista();
                     break;
                 case "conjunto":
                     manager.crearTablaConjunto();
+                    manager.crearTablaProducto_Conjunto();
                     break;
                 case "local":
                     manager.crearTablaLocal();
+                    manager.crearTablaProducto_Local();
                     break;
                 case "ticket":
                     manager.crearTablaTicket();
+                    manager.crearTablaFact();
+                    break;
             }
         }
 

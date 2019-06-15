@@ -28,9 +28,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.NumberPicker;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -43,14 +45,11 @@ import java.util.StringTokenizer;
 public class OCR extends AppCompatActivity
         implements View.OnClickListener,NavigationView.OnNavigationItemSelectedListener {
 
-    private CompoundButton useFlash;
+    private Switch flash;
     private TextView tvLocal;
-    //private TextView textValue;
     private ListView listView;
     private TextView tvFecha;
     private TextView tvHora;
-    private TextView tvPagar;
-    private Button btAceptar;
 
     private String local;
     private String fecha;
@@ -94,12 +93,11 @@ public class OCR extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 if(status == 1){
-                    Snackbar.make(view, "Ticket copiado a lista", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
+                    popUpInsertarEnLista();
                 }else{
                     Intent intent = new Intent(view.getContext(), OcrCaptureActivity.class);
                     intent.putExtra(OcrCaptureActivity.AutoFocus, true);
-                    intent.putExtra(OcrCaptureActivity.UseFlash, useFlash.isChecked());
+                    intent.putExtra(OcrCaptureActivity.UseFlash, flash.isChecked());
 
                     startActivityForResult(intent, RC_OCR_CAPTURE);
                 }
@@ -144,7 +142,7 @@ public class OCR extends AppCompatActivity
         tvHora = findViewById(R.id.et_hora);
         listView = findViewById(R.id.lv_ticket);
 
-        useFlash = findViewById(R.id.use_flash);
+        flash = findViewById(R.id.sw_flash);
 
 
         if(status == 1){
@@ -154,14 +152,13 @@ public class OCR extends AppCompatActivity
 
                 productos = new ArrayList<>();
 
-                Calendar calendar = Calendar.getInstance();
-                SimpleDateFormat mdformat = new SimpleDateFormat("dd/MM/yyyy");
-                fecha = mdformat.format(calendar.getTime());
+                fecha = getFecha();
+
 
                 tvFecha.setText(fecha);
 
-                mdformat = new SimpleDateFormat("HH:mm");
-                hora = mdformat.format(calendar.getTime());
+                hora = getHora();
+
                 tvHora.setText(hora);
 
                 try{
@@ -186,10 +183,12 @@ public class OCR extends AppCompatActivity
                 hora = ticket.getHora();
                 tvHora.setText(hora);
 
+                total = String.valueOf(ticket.getTotal());
+
                 String p = String.format("%.2f",ticket.getTotal());
                 p = p.replace(",",".");
 
-                useFlash.setVisibility(View.INVISIBLE);
+                flash.setVisibility(View.INVISIBLE);
 
                 insertarProducto.get(1).setPrecio(Double.parseDouble(p));
                 actualizarLista();
@@ -226,17 +225,37 @@ public class OCR extends AppCompatActivity
             local = datos.get(0);
             tvLocal.setText(local);
 
-            fecha = datos.get(1);
-            tvFecha.setText(fecha);
+            try{
+                fecha = datos.get(1);
+                tvFecha.setText(fecha);
+            }catch(Exception e){
+                tvFecha.setText(getFecha());
+            }
 
-            hora = datos.get(2);
-            tvHora.setText(hora);
+            try{
+                hora = datos.get(2);
+                tvHora.setText(hora);
+            }catch (Exception e){
+                tvHora.setText(getHora());
+            }
 
-            total = datos.get(3);
-            insertarProducto.get(1).setPrecio(Double.parseDouble(total));
+            try{
+                total = datos.get(3);
+                Double.parseDouble(total);
+            }catch (Exception e){
+                double t = 0.0;
+                for(Producto producto:productos){
+                    t+=producto.getPrecio();
+                }
+                total = String.valueOf(t);
+            }
+
+            try{
+                insertarProducto.get(1).setPrecio(Double.parseDouble(total));
+            }catch (Exception e){
+                insertarProducto.get(1).setPrecio(0.0);
+            }
             //TODO arreglar el precio
-
-            tvPagar.setVisibility(View.VISIBLE);
 
             actualizarLista();
         }
@@ -255,6 +274,18 @@ public class OCR extends AppCompatActivity
             }
         });
 
+    }
+
+    public String getFecha(){
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat mdformat = new SimpleDateFormat("dd/MM/yyyy");
+        return mdformat.format(calendar.getTime());
+    }
+
+    public String getHora(){
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat mdformat = new SimpleDateFormat("HH:mm");
+        return mdformat.format(calendar.getTime());
     }
 
     @Override
@@ -328,8 +359,6 @@ public class OCR extends AppCompatActivity
 
         final View v = inflater.inflate(R.layout.popup_fecha, null);
 
-
-        builder.setTitle("Modificar fecha");
         builder.setView(v);
 
         final CalendarView calendario = v.findViewById(R.id.calendarView);
@@ -389,13 +418,15 @@ public class OCR extends AppCompatActivity
         int minutos = 0;
 
         StringTokenizer token = new StringTokenizer(tiempo,":");
-        if(token.hasMoreTokens()){
-            hora = Integer.parseInt(token.nextToken());
-            minutos = Integer.parseInt(token.nextToken());
+        try{
+            if(token.hasMoreTokens()){
+                hora = Integer.parseInt(token.nextToken());
+                minutos = Integer.parseInt(token.nextToken());
+            }
+        }catch (Exception e){
+             hora = 0;
+             minutos = 0;
         }
-
-
-        builder.setTitle("Modificar hora");
         builder.setView(v);
 
         final NumberPicker pickerHora = v.findViewById(R.id.np_hora);
@@ -403,10 +434,13 @@ public class OCR extends AppCompatActivity
         pickerHora.setMinValue(0);
         pickerHora.setValue(hora);
 
+
         final NumberPicker pickerMinutos = v.findViewById(R.id.np_minutos);
         pickerMinutos.setMaxValue(59);
         pickerMinutos.setMinValue(0);
         pickerMinutos.setValue(minutos);
+        pickerMinutos.setValue(minutos);
+
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -436,20 +470,21 @@ public class OCR extends AppCompatActivity
         final View v = inflater.inflate(R.layout.popup_precio_ticket, null);
 
         final EditText et_precio_ticket = v.findViewById(R.id.et_precio_ticket);
+        et_precio_ticket.setText(String.valueOf(insertarProducto.get(1).getPrecio()));
 
 
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-                int pos = productos.size()-2;
+                Producto pro = insertarProducto.get(1);
 
-                Producto pro = productos.get(pos);
                 String pre = et_precio_ticket.getText().toString();
                 pre = pre.replace(",",".");
                 pro.setPrecio(Double.parseDouble(pre));
 
-                productos.set(pos,pro);
+                insertarProducto.set(1,pro);
+                actualizarLista();
             }
         })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -490,7 +525,6 @@ public class OCR extends AppCompatActivity
             }
         });
 
-        builder.setTitle("Modificar Producto");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -548,16 +582,23 @@ public class OCR extends AppCompatActivity
             }
         });
 
-        builder.setTitle("Insertar Producto");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String nombre = at_nombre_producto.getText().toString();
                 Producto producto = manager.obtenerProductoByNombre(nombre);
                 try{
-                    producto.setPrecio(Double.parseDouble(et_precio_producto.getText().toString()));
-                    productos.add(producto);
-                    actualizarPrecio();
+                    if(!producto.getNombre().equals("")){
+                        producto.setPrecio(Double.parseDouble(et_precio_producto.getText().toString()));
+                        productos.add(producto);
+                        actualizarPrecio();
+                    }else{
+                        producto.setNombre(at_nombre_producto.getText().toString());
+                        producto.setPrecio(Double.parseDouble(et_precio_producto.getText().toString()));
+                        productos.add(producto);
+                        actualizarPrecio();
+                    }
+
 
                     actualizarLista();
                 }catch (Exception e){
@@ -574,14 +615,16 @@ public class OCR extends AppCompatActivity
     }
 
     public void popUpEliminarTicket() {
-        // Use the Builder class for convenient dialog construction
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
 
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
 
-        builder.setTitle("Eliminar Ticket");
-        builder.setMessage("¿Desea eliminar este Ticket?");
+        final Button header = v.findViewById(R.id.btn_header);
+        header.setText("Eliminar Ticket");
+        final TextView mensaje = v.findViewById(R.id.tv_mensaje);
+        mensaje.setText("¿Desea eliminar este Ticket?");
+        builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarTicketById(idTicket);
@@ -601,9 +644,15 @@ public class OCR extends AppCompatActivity
         // Use the Builder class for convenient dialog construction
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
 
-        builder.setTitle("Eliminar Producto de Ticket");
-        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "' del ticket?");
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
+
+        final Button header = v.findViewById(R.id.btn_header);
+        header.setText("Eliminar Producto de Ticket");
+        final TextView mensaje = v.findViewById(R.id.tv_mensaje);
+        mensaje.setText("¿Desea eliminar el producto '" + producto.getNombre() + "' del ticket?");
+        builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 productos.remove(producto);
@@ -613,6 +662,57 @@ public class OCR extends AppCompatActivity
             }
         })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpInsertarEnLista(){
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Insertar en lista");
+        //builder.setMessage("Selecciona las listas donde quieres insertar el producto");
+        final ArrayList<String> listas = manager.obtenerNombreListas();
+
+        String[] mStringArray = new String[listas.size()];
+        mStringArray = listas.toArray(mStringArray);
+
+        final ArrayList<Integer> mSelectedItems = new ArrayList<>();
+
+        builder.setMultiChoiceItems(mStringArray, null,
+                new DialogInterface.OnMultiChoiceClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which,
+                                        boolean isChecked) {
+                        if (isChecked) {
+                            // If the user checked the item, add it to the selected items
+                            mSelectedItems.add(which);
+                        } else if (mSelectedItems.contains(which)) {
+                            // Else, if the item is already in the array, remove it
+                            mSelectedItems.remove(Integer.valueOf(which));
+                        }
+                    }
+                })
+                // Set the action buttons
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        ArrayList<Producto> productosLista =(ArrayList<Producto>) productos.clone();
+                        productosLista.removeAll(insertarProducto);
+                        for(int i = 0 ; i < mSelectedItems.size() ; i ++){
+                            String nombre = listas.get(mSelectedItems.get(i));
+                            Lista lista = manager.obtenerListaByNombre(nombre);
+                            manager.insertarProductos_Lista(productosLista,lista);
+                        }
+                        Toast.makeText(getApplicationContext(),"Productos insertados con exito!",Toast.LENGTH_LONG).show();
+                        finish();
+                        startActivity(new Intent(builder.getContext(),MainActivity.class));
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog, int id) {
 
                     }
@@ -637,6 +737,18 @@ public class OCR extends AppCompatActivity
                 ticket.setHora(tvHora.getText().toString());
                 ticket.setFecha(tvFecha.getText().toString());
 
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                Date convertedDate;
+                try {
+                    convertedDate = dateFormat.parse(ticket.getFecha());
+                    ticket.setDia(convertedDate.getDay());
+                    ticket.setMes(convertedDate.getMonth());
+                    ticket.setAno(convertedDate.getYear());
+                } catch (ParseException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+
                 Local l = manager.obtenerLocal(tvLocal.getText().toString());
                 if(l.getId().equals("-1")){
                     l.setNombre(tvLocal.getText().toString());
@@ -646,8 +758,8 @@ public class OCR extends AppCompatActivity
                 ticket.setLocal(l);
 
 
-                String precio = total.replace(",", ".");
-                ticket.setTotal(Double.parseDouble(precio));
+                //String precio = total.replace(",", ".");
+                ticket.setTotal(insertarProducto.get(1).getPrecio());
 
                 ArrayList<Producto> productosTicket = new ArrayList<>();
                 productosTicket.addAll(productos);
@@ -669,7 +781,7 @@ public class OCR extends AppCompatActivity
             ticket.setFecha(fecha);
             Local l = manager.obtenerLocal(local);
             ticket.setLocal(l);
-            ticket.setTotal(Double.parseDouble(total));
+            ticket.setTotal(insertarProducto.get(1).getPrecio());
 
             ArrayList<Producto> productosTicket = new ArrayList<>();
             productosTicket.addAll(productos);
@@ -692,8 +804,6 @@ public class OCR extends AppCompatActivity
         nuevoProductoEnLista();
         AdapterContenidoTicket adapter = new AdapterContenidoTicket(this,productos);
         listView.setAdapter(adapter);
-
-
     }
 
     public void actualizarPrecio(){
@@ -703,13 +813,35 @@ public class OCR extends AppCompatActivity
                 precio+=producto.getPrecio();
             }
         }
-        total = String.valueOf(precio);
         Producto pr = insertarProducto.get(1);
         pr.setPrecio(precio);
         insertarProducto.set(1,pr);
+    }
 
-        String p = String.format("%.2f",precio);
-        p = p.replace(",",".");
+    public void bajarPrecios(){
+        ArrayList<Producto> pros =(ArrayList<Producto>) productos.clone();
+        pros.removeAll(insertarProducto);
+        productos.removeAll(pros);
+
+        double oldPrecio = 0.0;
+        for(int i = 0 ; i < pros.size(); i++){
+
+            Producto p = pros.get(i);
+
+
+            if(i==0){
+                oldPrecio = p.getPrecio();
+                p.setPrecio(0.0);
+            }else{
+                double precio = oldPrecio;
+                oldPrecio = p.getPrecio();
+                p.setPrecio(precio);
+            }
+        }
+        productos.addAll(0,pros);
+        actualizarLista();
+        actualizarPrecio();
+
     }
 
     @Override
@@ -740,6 +872,8 @@ public class OCR extends AppCompatActivity
         if (id == R.id.action_delete) {
             popUpEliminarTicket();
             return true;
+        }else if(id==R.id.action_down){
+            bajarPrecios();
         }
 
         return super.onOptionsItemSelected(item);

@@ -7,8 +7,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.view.MenuItem;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 public class DataBaseManager implements Database {
@@ -55,44 +59,33 @@ public class DataBaseManager implements Database {
 
     public void actualizar(){
 
-        if(!existeTablaProducto()){
-            this.crearTablaLocal();
+        if(!existeTablaProducto()) {
             this.crearTablaProducto();
-
+        }
+        if(!existeTablaCategoria()) {
             this.crearTablaCategoria();
-            this.crearTablaSubcategoria();
-
-            Categoria c = new Categoria("sin categoria");
-            Subcategoria s = new Subcategoria("sin subcategoria");
-            insertarCategoria(c);
-            insertarSubcategoria(s,c);
-
-            this.crearTablaProducto_Local();
             this.crearTablaProducto_Categoria();
-            this.crearTablaProducto_Subcategoria();
-            this.crearTablaCategoria_Subcategoria();
-
-            this.crearTablaTicket();
-            this.crearTablaFact();
-
-            this.crearTablaLista();
-            this.crearTablaProducto_Lista();
-
-            this.crearTablaConjunto();
-            this.crearTablaProducto_Conjunto();
-
+        }
+        if(!existeTablaLocal()) {
             this.crearTablaLocal();
             this.crearTablaProducto_Local();
         }
-
-        //this.crearTablaTicket();
-        //this.crearTablaFact();
-        //this.crearTablaLista();
-        //this.crearTablaProducto_Lista();
-
-        /**/
-
-
+        if(!existeTablaLista()) {
+            this.crearTablaLista();
+            this.crearTablaProducto_Lista();
+        }
+        if(!existeTablaConjunto()) {
+            this.crearTablaConjunto();
+            this.crearTablaProducto_Conjunto();
+        }
+        if(!existeTablaLocal()) {
+            this.crearTablaLocal();
+            this.crearTablaProducto_Local();
+        }
+        if(!existeTablaTickets()) {
+            this.crearTablaTicket();
+            this.crearTablaFact();
+        }
     }
 
     public void reset(){
@@ -304,7 +297,6 @@ public class DataBaseManager implements Database {
     private static final String TABLE_PRODUCTO = "producto";
     private static final String TABLE_LOCAL = "local";
     private static final String TABLE_CATEGORIA = "categoria";
-    private static final String TABLE_SUBCATEGORIA = "subcategoria";
     private static final String TABLE_LISTA = "lista";
     private static final String TABLE_CONJUNTO = "conjunto";
     private static final String TABLE_TICKET = "ticket";
@@ -312,10 +304,8 @@ public class DataBaseManager implements Database {
 
     private static final String TABLE_PRODUCTO_LOCAL = "producto_local";
     private static final String TABLE_PRODUCTO_CATEGORIA = "producto_categoria";
-    private static final String TABLE_PRODUCTO_SUBCATEGORIA = "producto_subcategoria";
     private static final String TABLE_PRODUCTO_LISTA = "producto_lista";
     private static final String TABLE_PRODUCTO_CONJUNTO = "producto_conjunto";
-    private static final String TABLE_CATEGORIA_SUBCATEGORIA = "categoria_subcategoria";
 
             /*COLUMNAS COMUNES*/
     private static final String CN_ID = "_id";
@@ -325,20 +315,14 @@ public class DataBaseManager implements Database {
     private static final String CN_DESCRIPCION = "descripcion";
     private static final String CN_ETIQUETA = "etiqueta";
     private static final String CN_CATEGORIA = "categoria";
-    private static final String CN_SUBCATEGORIA = "subcategoria";
     private static final String CN_LOCAL = "local";
     private static final String CN_PRECIO = "precio";
-    private static final String CN_MARCA = "marca";
-
-            /*COLUMNAS TABLA LOCAL*/
-    private static final String CN_DIRECCION = "direccion";
-    private static final String CN_NIF = "nif";
-    private static final String CN_WEB = "web";
-    private static final String CN_TLFN = "tlfn";
-    private static final String CN_HORARIO = "horario";
 
             /*COLUMNAS TABLA TICKET*/
     private static final String CN_FECHA = "fecha";
+    private static final String CN_ANO = "ano";
+    private static final String CN_MES = "mes";
+    private static final String CN_DIA = "dia";
     private static final String CN_HORA = "hora";
     private static final String CN_TOTAL = "total";
     private static final String CN_IDTICKET = "idticket";
@@ -350,7 +334,6 @@ public class DataBaseManager implements Database {
     private static final String CN_IDPRODUCTO = "idproducto";
     private static final String CN_IDLOCAL = "idlocal";
     private static final String CN_IDCATEGORIA = "idcategoria";
-    private static final String CN_IDSUBCATEGORIA = "idsubcategoria";
     private static final String CN_IDLISTA = "idlista";
     private static final String CN_IDCONJUNTO = "idconjunto";
 
@@ -360,8 +343,7 @@ public class DataBaseManager implements Database {
             + CN_NOMBRE + " text not null unique,"
             + CN_DESCRIPCION + " text,"
             + CN_ETIQUETA + " text,"
-            + CN_CATEGORIA + " text,"
-            + CN_SUBCATEGORIA + " text"
+            + CN_CATEGORIA + " text"
             + ");";
 
     private ContentValues generarValoresProducto(Producto producto){
@@ -374,8 +356,6 @@ public class DataBaseManager implements Database {
         }
         valores.put(CN_ETIQUETA, producto.getEtiqueta());
         valores.put(CN_CATEGORIA, producto.getCategoria().getId());
-        valores.put(CN_MARCA,producto.getMarca());
-        valores.put(CN_SUBCATEGORIA, producto.getSubcategoria().getId());
         return valores;
     }
 
@@ -392,40 +372,13 @@ public class DataBaseManager implements Database {
 
     @Override
     public long insertarProducto(Producto producto) {
-        /*Categoria categoria = this.obtenerCategoria(producto.getCategoria().getNombre());
-        if(categoria.isNull()){
-            insertarCategoria(producto.getCategoria());
-            categoria = obtenerCategoria(producto.getCategoria().getNombre());
-            producto.setCategoria(categoria);
-        }
+        insertarProducto_Categoria(producto,producto.getCategoria());
 
-        Subcategoria subcategoria = this.obtenerSubcategoria(producto.getSubcategoria().getNombre());
-        if(subcategoria.isNull()){
-            insertarSubcategoria(producto.getSubcategoria());
-            subcategoria = obtenerSubcategoria(producto.getSubcategoria().getNombre());
-            producto.setSubcategoria(subcategoria);
-        }
-
-        Local local = this.obtenerLocal(producto.getLocal().getNombre());
-        if(producto.getLocal() != null && local.isNull()){
-            insertarLocal(producto.getLocal());
-            local = obtenerLocal(producto.getLocal().getNombre());
-            producto.setLocal(local);
-        }*/
-        if(!producto.getCategoria().getNombre().equals("sin categoria")){
-            insertarProducto_Categoria(producto,producto.getCategoria());
-        }
-        if(!producto.getSubcategoria().getNombre().equals("sin subcategoria")){
-            insertarProducto_Subcategoria(producto,producto.getSubcategoria());
-        }
-        /*if(producto.getLocal() != null){
-            insertarProducto_Local(producto,producto.getLocal());
-        }*/
         return db.insert(TABLE_PRODUCTO, null, generarValoresProducto(producto));
     }
     @Override
     public ArrayList<Producto> obtenerProductos() {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA};
         ArrayList<Producto> productos = new ArrayList<>();
         Producto producto;
         Cursor cursor = db.query(TABLE_PRODUCTO,columnas,null,null,null,null,CN_NOMBRE);
@@ -438,9 +391,6 @@ public class DataBaseManager implements Database {
                 producto.setEtiqueta(cursor.getString(3));
                 Categoria categoria = this.obtenerCategoriaById(cursor.getInt(4)+"");
                 producto.setCategoria(categoria);
-                producto.setSubcategoria(this.obtenerSubcategoriaById(cursor.getInt(5)+""));
-                producto.setLocal(this.obtenerLocalById(cursor.getInt(6)+""));
-                producto.setMarca(cursor.getString(7));
 
                 productos.add(producto);
 
@@ -452,7 +402,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public ArrayList<Producto> obtenerProductosByCategoria(Categoria categoria) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA};
         ArrayList<Producto> productos = new ArrayList<>();
         Producto producto;
         Cursor cursor = db.query(TABLE_PRODUCTO, columnas, CN_CATEGORIA + " = ?", new String[]{categoria.getNombre()}, null, null, CN_NOMBRE);
@@ -464,10 +414,6 @@ public class DataBaseManager implements Database {
                 producto.setDescripcion(cursor.getString(2));
                 producto.setEtiqueta(cursor.getString(3));
                 producto.setCategoria(new Categoria(cursor.getString(4)));
-                producto.setSubcategoria(new Subcategoria(cursor.getString(5)));
-                producto.setLocal(new Local(cursor.getString(6)));
-                producto.setMarca(cursor.getString(7));
-
                 productos.add(producto);
             } while (cursor.moveToNext());
         }
@@ -496,7 +442,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public Producto obtenerProductoByNombre(String nombre) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA};
         Producto producto = new Producto();
         Cursor cursor = db.query(TABLE_PRODUCTO,columnas,CN_NOMBRE+ " = ?",new String[]{nombre},null,null,null);
         if(cursor.moveToFirst()) {
@@ -507,10 +453,6 @@ public class DataBaseManager implements Database {
                 producto.setEtiqueta(cursor.getString(3));
                 Categoria categoria = obtenerCategoriaById(cursor.getString(4));
                 producto.setCategoria(categoria);
-                Subcategoria subcategoria = obtenerSubcategoriaById(cursor.getString(5));
-                producto.setSubcategoria(subcategoria);
-                producto.setLocal(new Local(cursor.getString(6)));
-                producto.setMarca(cursor.getString(7));
 
             } while (cursor.moveToNext());
         }
@@ -520,7 +462,7 @@ public class DataBaseManager implements Database {
 
     @Override
     public Producto obtenerProductoById(String id) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA,CN_SUBCATEGORIA,CN_LOCAL,CN_MARCA};
+        String[] columnas = new String[] {CN_ID,CN_NOMBRE,CN_DESCRIPCION, CN_ETIQUETA,CN_CATEGORIA};
         Producto producto = new Producto();
         Cursor cursor = db.query(TABLE_PRODUCTO,columnas,CN_ID+ " = ?",new String[]{id},null,null,null);
         if(cursor.moveToFirst()) {
@@ -531,10 +473,6 @@ public class DataBaseManager implements Database {
                 producto.setEtiqueta(cursor.getString(3));
                 String idCategoria = cursor.getString(4);
                 producto.setCategoria(obtenerCategoriaById(idCategoria));
-                String idSubcategoria = cursor.getString(5);
-                producto.setSubcategoria(obtenerSubcategoriaById(idSubcategoria));
-                producto.setLocal(new Local(cursor.getString(6)));
-                producto.setMarca(cursor.getString(7));
 
             } while (cursor.moveToNext());
         }
@@ -566,7 +504,6 @@ public class DataBaseManager implements Database {
     @Override
     public boolean eliminarProducto(Producto producto) {
         eliminarProducto_Categoria(producto);
-        eliminarProducto_Subcategoria(producto);
 
         db.delete(TABLE_PRODUCTO, CN_NOMBRE + "=?", new String[]{producto.getNombre()});
         return true;
@@ -729,6 +666,9 @@ public class DataBaseManager implements Database {
     public void crearTablaCategoria(){
         this.eliminarTabla(TABLE_CATEGORIA);
         db.execSQL(CREATE_TABLE_CATEGORIA);
+
+        Categoria c = new Categoria("sin categoria");
+        insertarCategoria(c);
     }
 
     @Override
@@ -746,8 +686,6 @@ public class DataBaseManager implements Database {
                 Categoria categoria = new Categoria();
                 categoria.setId(cursor.getInt(0) + "");
                 categoria.setNombre(cursor.getString(1));
-                ArrayList<Subcategoria> subcategorias = obtenerSubcategorias_Categoria(categoria);
-                categoria.setSubcategorias(subcategorias);
                 categorias.add(categoria);
             } while (cursor.moveToNext());
         }
@@ -815,189 +753,8 @@ public class DataBaseManager implements Database {
         return true;
     }
 
-        /*todo CREACION TABLA SUBCATEGORIA */
-
-    private static final String CREATE_TABLE_SUBCATEGORIA = "create table " + TABLE_SUBCATEGORIA + "("
-            + CN_ID + " integer primary key autoincrement,"
-            + CN_NOMBRE + " text not null unique"
-            + ");";
-
-    private ContentValues generarValoresSubcategoria(Subcategoria subcategoria){
-        /*Habra que hacer un if x!= null {val.put(CN_X,x)}*/
-        ContentValues valores = new ContentValues();
-        valores.put(CN_NOMBRE, subcategoria.getNombre());
-        return valores;
-    }
-
-    @Override
-    public boolean existeTablaSubcategoria(){
-        return this.isTableExists(db,"subcategoria");
-    }
-
-    @Override
-    public void crearTablaSubcategoria(){
-        this.eliminarTabla(TABLE_SUBCATEGORIA);
-        db.execSQL(CREATE_TABLE_SUBCATEGORIA);
-    }
-
-    @Override
-    public long insertarSubcategoria(Subcategoria subcategoria,Categoria categoria) {
-
-        long id = db.insert(TABLE_SUBCATEGORIA, null, generarValoresSubcategoria(subcategoria));
-        subcategoria.setId(String.valueOf(id));
-        insertarCategoria_Subcategoria(categoria,subcategoria);
-        return id;
-    }
-
-    @Override
-    public ArrayList<Subcategoria> obtenerSubcategorias() {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
-        ArrayList<Subcategoria> subcategorias = new ArrayList<>();
-        Cursor cursor = db.query(TABLE_SUBCATEGORIA, columnas, null, null, null, null, CN_NOMBRE);
-        if(cursor.moveToFirst()) {
-            do {
-                Subcategoria subcategoria = new Subcategoria(cursor.getString(1));
-                subcategoria.setId(cursor.getString(0));
-                subcategorias.add(subcategoria);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return subcategorias;
-    }
-
-    @Override
-    public ArrayList<String> obtenerNombreSubcategorias() {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
-        ArrayList<String> subcategorias = new ArrayList<>();
-        Cursor cursor = db.query(TABLE_SUBCATEGORIA, columnas, null, null, null, null, CN_NOMBRE);
-        if(cursor.moveToFirst()) {
-            do {
-                subcategorias.add(cursor.getString(1));
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return subcategorias;
-    }
 
 
-    @Override
-    public Subcategoria obtenerSubcategoriaById(String id) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
-        Subcategoria subcategoria = new Subcategoria();
-        Cursor cursor = db.query(TABLE_SUBCATEGORIA,columnas,CN_ID+ " = ?",new String[]{id},null,null,null);
-        if(cursor.moveToFirst()) {
-            do {
-                subcategoria.setId(cursor.getString(0));
-                subcategoria.setNombre(cursor.getString(1));
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return subcategoria;
-    }
-
-    @Override
-    public Subcategoria obtenerSubcategoria(String nombre) {
-        String[] columnas = new String[] {CN_ID,CN_NOMBRE};
-        Subcategoria subcategoria = new Subcategoria();
-        Cursor cursor = db.query(TABLE_SUBCATEGORIA,columnas,CN_NOMBRE+ " = ?",new String[]{nombre},null,null,null);
-        if(cursor.moveToFirst()) {
-            do {
-                subcategoria.setId(cursor.getInt(0) + "");
-                subcategoria.setNombre(cursor.getString(1));
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return subcategoria;
-    }
-
-    @Override
-    public boolean modificarSubcategoria(Subcategoria subcategoria) {
-        ContentValues values = generarValoresSubcategoria(subcategoria);
-        int result = db.update(TABLE_SUBCATEGORIA, values, CN_ID + " = ?", new String[]{subcategoria.getId()});
-        return result == 1;
-    }
-
-    @Override
-    public boolean eliminarSubcategoria(Subcategoria subcategoria) {
-        db.delete(TABLE_SUBCATEGORIA, CN_ID + "=?", new String[]{subcategoria.getId()});
-        return true;
-    }
-
-            /*todo CREACION TABLA CATEGORIA_SUBCATEGORIA */
-
-    private static final String CREATE_TABLE_CATEGORIA_SUBCATEGORIA = "create table " + TABLE_CATEGORIA_SUBCATEGORIA + "("
-            + CN_ID + " integer primary key autoincrement,"
-            + CN_IDCATEGORIA + " integer not null,"
-            + CN_IDSUBCATEGORIA + " integer not null"
-            + ");";
-
-
-    @Override
-    public void crearTablaCategoria_Subcategoria(){
-        this.eliminarTabla(TABLE_CATEGORIA_SUBCATEGORIA);
-        db.execSQL(CREATE_TABLE_CATEGORIA_SUBCATEGORIA);
-    }
-
-    @Override
-    public long insertarCategoria_Subcategoria(Categoria categoria, Subcategoria subcategoria) {
-        return db.insert(TABLE_CATEGORIA_SUBCATEGORIA, null, generarValoresCategoria_Subcategoria(categoria, subcategoria));
-    }
-
-    @Override
-    public Map<Categoria,Subcategoria> obtenerCategorias_Subcategorias() {
-        /*probablemente habra que cambiar a Map<Local,ArrayList<Producto>>*/
-        String[] columnas = new String[] {CN_ID,CN_IDCATEGORIA,CN_IDSUBCATEGORIA};
-        Map<Categoria,Subcategoria> mapa = new TreeMap<>();
-        Cursor cursor = db.query(TABLE_CATEGORIA_SUBCATEGORIA, columnas, null, null, null, null, CN_IDCATEGORIA);
-        if(cursor.moveToFirst()) {
-            do {
-                Categoria categoria = this.obtenerCategoriaById(cursor.getString(1));
-                Subcategoria subcategoria = this.obtenerSubcategoriaById(cursor.getString(2));
-
-                mapa.put(categoria,subcategoria);
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return mapa;
-    }
-
-    @Override
-    public ArrayList<Subcategoria> obtenerSubcategorias_Categoria(Categoria categoria) {
-        String[] columnas = new String[] {CN_ID,CN_IDCATEGORIA,CN_IDSUBCATEGORIA};
-        ArrayList<Subcategoria> subcategorias = new ArrayList<>();
-        try{
-            Cursor cursor = db.query(TABLE_CATEGORIA_SUBCATEGORIA, columnas, CN_IDCATEGORIA + " = ?", new String[]{categoria.getId()}, null, null, CN_IDSUBCATEGORIA);
-            if(cursor.moveToFirst()) {
-                do {
-                    Subcategoria subcategoria = this.obtenerSubcategoriaById(cursor.getString(2));
-                    subcategorias.add(subcategoria);
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return subcategorias;
-    }
-
-    @Override
-    public boolean eliminarSubcategorias_Categoria(Categoria categoria) {
-        db.delete(TABLE_PRODUCTO_CATEGORIA, CN_IDCATEGORIA + "=?", new String[]{categoria.getId()});
-        return true;
-    }
-
-    @Override
-    public boolean eliminarSubcategorias_Categoria(ArrayList<Subcategoria> subcategorias) {
-        for (Subcategoria sub:subcategorias) {
-            db.delete(TABLE_PRODUCTO_CATEGORIA, CN_IDSUBCATEGORIA + "=?", new String[]{sub.getId()});
-        }
-
-        return true;
-    }
     private ContentValues generarValoresProducto_Categoria(Producto producto, Categoria categoria){
         /*Habra que hacer un if x!= null {val.put(CN_X,x)}*/
         ContentValues valores = new ContentValues();
@@ -1010,6 +767,13 @@ public class DataBaseManager implements Database {
     public void crearTablaProducto_Categoria(){
         this.eliminarTabla(TABLE_PRODUCTO_CATEGORIA);
         db.execSQL(CREATE_TABLE_PRODUCTO_CATEGORIA);
+
+        Categoria categoria = obtenerCategoriaById("1");
+
+        ArrayList<Producto> productos = obtenerProductos();
+        for(Producto producto:productos){
+            insertarProducto_Categoria(producto,categoria);
+        }
     }
 
     @Override
@@ -1135,11 +899,10 @@ public class DataBaseManager implements Database {
             + CN_IDCATEGORIA + " integer not null"
             + ");";
 
-    private ContentValues generarValoresCategoria_Subcategoria(Categoria categoria, Subcategoria subcategoria){
+    private ContentValues generarValoresCategoria_Subcategoria(Categoria categoria){
         /*Habra que hacer un if x!= null {val.put(CN_X,x)}*/
         ContentValues valores = new ContentValues();
         valores.put(CN_IDCATEGORIA, categoria.getId());
-        valores.put(CN_IDSUBCATEGORIA, subcategoria.getId());
         return valores;
     }
 
@@ -1193,86 +956,6 @@ public class DataBaseManager implements Database {
     @Override
     public boolean eliminarProductos_Categoria(Categoria categoria) {
         db.delete(TABLE_PRODUCTO_CATEGORIA, CN_IDCATEGORIA + "=?", new String[]{categoria.getId()});
-        return true;
-    }
-
-            /*todo CREACION TABLA PRODUCTO_SUBCATEGORIA */
-
-    private static final String CREATE_TABLE_PRODUCTO_SUBCATEGORIA = "create table " + TABLE_PRODUCTO_SUBCATEGORIA + "("
-            + CN_ID + " integer primary key autoincrement,"
-            + CN_IDPRODUCTO + " integer not null,"
-            + CN_IDSUBCATEGORIA + " integer not null"
-            + ");";
-
-    private ContentValues generarValoresProducto_Subcategoria(Producto producto, Subcategoria subcategoria){
-        /*Habra que hacer un if x!= null {val.put(CN_X,x)}*/
-        ContentValues valores = new ContentValues();
-        valores.put(CN_IDPRODUCTO, producto.getId());
-        valores.put(CN_IDSUBCATEGORIA, subcategoria.getId());
-        return valores;
-    }
-
-    @Override
-    public void crearTablaProducto_Subcategoria(){
-        this.eliminarTabla(TABLE_PRODUCTO_SUBCATEGORIA);
-        db.execSQL(CREATE_TABLE_PRODUCTO_SUBCATEGORIA);
-    }
-
-    @Override
-    public long insertarProducto_Subcategoria(Producto producto, Subcategoria subcategoria) {
-        return db.insert(TABLE_PRODUCTO_SUBCATEGORIA, null, generarValoresProducto_Subcategoria(producto, subcategoria));
-    }
-
-    @Override
-    public Map<Subcategoria,Producto> obtenerSubcategorias_Productos() {
-        /*probablemente habra que cambiar a Map<Local,ArrayList<Producto>>*/
-        String[] columnas = new String[] {CN_ID,CN_IDSUBCATEGORIA,CN_IDPRODUCTO};
-        Map<Subcategoria,Producto> mapa = new TreeMap<>();
-        Cursor cursor = db.query(TABLE_PRODUCTO_SUBCATEGORIA, columnas, null, null, null, null, CN_IDSUBCATEGORIA);
-        if(cursor.moveToFirst()) {
-            do {
-                Subcategoria subcategoria = this.obtenerSubcategoriaById(cursor.getString(1));
-                Producto producto = this.obtenerProductoById(cursor.getString(2));
-
-                mapa.put(subcategoria,producto);
-
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return mapa;
-    }
-
-    @Override
-    public ArrayList<Producto> obtenerProductos_Subcategoria(Subcategoria subcategoria) {
-        String[] columnas = new String[] {CN_ID,CN_IDSUBCATEGORIA,CN_IDPRODUCTO};
-        ArrayList<Producto> productos = new ArrayList<>();
-        Cursor cursor = db.query(TABLE_PRODUCTO_SUBCATEGORIA, columnas, CN_ID + " = ?", new String[]{subcategoria.getId()}, null, null, null);
-        if(cursor.moveToFirst()) {
-            do {
-                Producto producto = this.obtenerProductoById(cursor.getString(2));
-                productos.add(producto);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return productos;
-    }
-
-    @Override
-    public boolean modificarProducto_Subcategoria(String id, Producto producto, Subcategoria subcategoria) {
-        ContentValues values = generarValoresProducto_Subcategoria(producto,subcategoria);
-        int result = db.update(TABLE_PRODUCTO_SUBCATEGORIA, values, CN_ID + " = ?", new String[]{id});
-        return result == 1;
-    }
-
-    @Override
-    public boolean eliminarProducto_Subcategoria(Producto producto) {
-        db.delete(TABLE_PRODUCTO_SUBCATEGORIA, CN_IDPRODUCTO + "=?", new String[]{producto.getId()});
-        return true;
-    }
-
-    @Override
-    public boolean eliminarProductos_Subcategoria(Subcategoria subcategoria) {
-        db.delete(TABLE_PRODUCTO_SUBCATEGORIA, CN_IDSUBCATEGORIA + "=?", new String[]{subcategoria.getId()});
         return true;
     }
 
@@ -1480,12 +1163,15 @@ public class DataBaseManager implements Database {
     }
 
     @Override
-    public long insertarProductos_Lista(Conjunto conjunto, Lista lista) {
+    public long insertarProductos_Lista(ArrayList<Producto> productos, Lista lista) {
         long count = 0;
         for(Producto producto
-                : conjunto.getProductos()){
-            db.insert(TABLE_PRODUCTO_LISTA, null, generarValoresProducto_Lista(producto, lista));
-            count++;
+                : productos){
+            ArrayList<Producto> pl = obtenerListaById(lista.getId()).getProductos();
+            if(!pl.contains(producto)){
+                db.insert(TABLE_PRODUCTO_LISTA, null, generarValoresProducto_Lista(producto, lista));
+                count++;
+            }
         }
         return count;
     }
@@ -1728,6 +1414,9 @@ public class DataBaseManager implements Database {
     private static final String CREATE_TABLE_TICKET = "create table " + TABLE_TICKET + "("
             + CN_ID + " integer primary key autoincrement,"
             + CN_FECHA + " text,"
+            + CN_ANO + " integer,"
+            + CN_MES + " integer,"
+            + CN_DIA + " integer,"
             + CN_HORA + " text,"
             + CN_LOCAL + " text,"
             + CN_TOTAL + " integer"
@@ -1737,6 +1426,9 @@ public class DataBaseManager implements Database {
         /*Habra que hacer un if x!= null {val.put(CN_X,x)}*/
         ContentValues valores = new ContentValues();
         valores.put(CN_FECHA, ticket.getFecha());
+        valores.put(CN_ANO, ticket.getAno());
+        valores.put(CN_MES, ticket.getMes());
+        valores.put(CN_DIA, ticket.getDia());
         valores.put(CN_HORA,ticket.getHora());
         valores.put(CN_TOTAL, ticket.getTotal());
         valores.put(CN_LOCAL, ticket.getLocal().getId());
@@ -1774,6 +1466,12 @@ public class DataBaseManager implements Database {
                 ticket = new Ticket();
                 ticket.setIdTicket(cursor.getString(0));
                 ticket.setFecha(cursor.getString(1));
+
+                StringTokenizer tokenizer = new StringTokenizer(cursor.getString(1),"/");
+                ticket.setDia(Integer.parseInt(tokenizer.nextToken()));
+                ticket.setMes(Integer.parseInt(tokenizer.nextToken()));
+                ticket.setAno(Integer.parseInt(tokenizer.nextToken()));
+
                 ticket.setHora(cursor.getString(2));
                 ticket.setLocal(obtenerLocalById(cursor.getString(3)));
                 ticket.setTotal(cursor.getFloat(4));
@@ -1880,12 +1578,19 @@ public class DataBaseManager implements Database {
 
     @Override
     public boolean insertarFacts(Ticket ticket) {
+        ArrayList<Producto> productos = obtenerLocal_Productos(ticket.getLocal());
+
         for (Producto producto :
                 ticket.getProductos()) {
             if(producto.getId().equals("-1")){
                 long idProducto = insertarProducto(producto);
                 producto.setId(String.valueOf(idProducto));
             }
+
+            if(!productos.contains(producto)){
+                insertarProducto_Local(producto,ticket.getLocal(),producto.getPrecio());
+            }
+
             Fact fact = new Fact(ticket.getIdTicket(),producto.getId(),producto.getPrecio());
             db.insert(TABLE_FACT, null, generarValoresFact(fact));
         }

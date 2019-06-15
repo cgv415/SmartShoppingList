@@ -51,7 +51,7 @@ public class AdapterContenidoTicket extends BaseAdapter {
         String stNombre = productos.get(i).getNombre();
         String stPrecio = "";
         try{
-             stPrecio = productos.get(i).getPrecio().toString();
+             stPrecio = String.format("%.2f",productos.get(i).getPrecio());
         }catch (Exception e){
             stPrecio = "?";
         }

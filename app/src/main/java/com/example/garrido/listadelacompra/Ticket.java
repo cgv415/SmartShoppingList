@@ -10,6 +10,7 @@ public class Ticket {
     private Local local;
     private double total;
     private ArrayList<Producto> productos;
+    private int ano,mes,dia;
 
     public String getIdTicket() {
         return idTicket;
@@ -45,6 +46,30 @@ public class Ticket {
 
     public double getTotal() {
         return total;
+    }
+
+    public int getAno() {
+        return ano;
+    }
+
+    public void setAno(int ano) {
+        this.ano = ano;
+    }
+
+    public int getMes() {
+        return mes;
+    }
+
+    public void setMes(int mes) {
+        this.mes = mes;
+    }
+
+    public int getDia() {
+        return dia;
+    }
+
+    public void setDia(int dia) {
+        this.dia = dia;
     }
 
     public void setTotal(double total) {

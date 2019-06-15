@@ -8,4 +8,12 @@
         app:showAsAction="always">
 
     </item>
+
+    <item
+        android:id="@+id/action_down"
+        android:icon="@drawable/ic_down"
+        android:title="Bajar Precios"
+        app:showAsAction="always">
+
+    </item>
 </menu>

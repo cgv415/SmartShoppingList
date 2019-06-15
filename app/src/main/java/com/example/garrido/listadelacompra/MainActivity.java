@@ -31,8 +31,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
@@ -54,9 +52,6 @@ public class MainActivity extends AppCompatActivity
     ArrayList<String> contraidos;
     android.widget.ExpandableListAdapter listAdapter;
     ArrayList<Lista> listas;
-
-    Spinner spTipo;
-
     Lista lista;
 
     String agruparPor = "categoria";
@@ -121,57 +116,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         contraidos = new ArrayList<>();
-
-
-        spTipo = findViewById(R.id.sp_tipo);
-        final ArrayList<String> tipos = new ArrayList<>();
-        tipos.add("producto");
-        tipos.add("categoria");
-        tipos.add("etiqueta");
-
-        ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tipos);
-        spTipo.setAdapter(adapterTipo);
-
-        spTipo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                buscador.setHint(tipos.get(i));
-                String tipo = spTipo.getSelectedItem().toString();
-                switch (tipo) {
-                    case "producto": {
-                        arrayBuscador = lista.getNombreProductos();
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                    case "categoria": {
-                        arrayBuscador = manager.obtenerNombreCategorias();
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                    default: {
-                        arrayBuscador = new ArrayList<>();
-                        for (int j = 0; j < productos.size(); j++) {
-                            arrayBuscador.add(productos.get(j).getEtiqueta());
-                        }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                }
-
-                buscador.setText("");
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         expandableListView = findViewById(R.id.lv_dropdow);
 
@@ -252,7 +196,19 @@ public class MainActivity extends AppCompatActivity
 
         actualizarLista();
 
-        arrayBuscador = lista.getNombreProductos();
+        arrayBuscador = manager.obtenerNombreProductos();
+        int size = arrayBuscador.size();
+        for(int i = 0; i < size; i++){
+            Producto producto = manager.obtenerProductoByNombre(arrayBuscador.get(i));
+            if(!arrayBuscador.contains(producto.getCategoria().getNombre())){
+                arrayBuscador.add(producto.getCategoria().getNombre());
+            }
+
+            if(!arrayBuscador.contains(producto.getEtiqueta())){
+                arrayBuscador.add(producto.getEtiqueta());
+            }
+        }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, arrayBuscador);
         buscador.setAdapter(adapter);
@@ -267,12 +223,12 @@ public class MainActivity extends AppCompatActivity
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                String secuencia = charSequence.toString().toLowerCase();
                 Map<String,ArrayList<String>> mapAux = new TreeMap<>();
                 ArrayList<String> agrupacionAux = new ArrayList<>();
-                String tipo = spTipo.getSelectedItem().toString();
                 ArrayList<String> value;
 
-                if(charSequence.equals("")){
+                if(charSequence.toString().equals("")){
                     actualizarLista();
                 }else {
                     Set<Map.Entry<String, ArrayList<String>>> entrySet = map.entrySet();
@@ -280,55 +236,25 @@ public class MainActivity extends AppCompatActivity
                         ArrayList<String> nombresProductos = entry.getValue();
                         for (int j = 0; j < nombresProductos.size(); j++) {
                             Producto producto = manager.obtenerProductoByNombre(nombresProductos.get(j));
-                            switch (tipo) {
-                                case "categoria":
-                                    if (producto.getCategoria().getNombre().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-                                    break;
-                                case "etiqueta":
-                                    if (producto.getEtiqueta().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-
-                                    break;
-                                case "producto":
-                                    if (producto.getNombre().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-                                    break;
+                            if (producto.getNombre().toLowerCase().contains(secuencia)
+                                    || producto.getCategoria().getNombre().toLowerCase().contains(secuencia)
+                                    || producto.getEtiqueta().toLowerCase().contains(secuencia)) {
+                                if (!agrupacionAux.contains(entry.getKey())) {
+                                    value = new ArrayList<>();
+                                    agrupacionAux.add(entry.getKey());
+                                    value.add(producto.getNombre());
+                                    mapAux.put(entry.getKey(), value);
+                                } else {
+                                    value = mapAux.get(entry.getKey());
+                                    value.add(producto.getNombre());
+                                    mapAux.put(entry.getKey(), value);
+                                }
                             }
+
                         }
                     }
 
-                    listAdapter = new ExpandableListAdapter(getApplicationContext(), agrupacionAux,mapAux,tachados);
+                    listAdapter = new ExpandableListAdapter(getApplicationContext(), agrupacionAux,mapAux,new TreeMap<String, ArrayList<String>>());
                     expandableListView.setAdapter(listAdapter);
 
                     for(int j = 0; j < agrupacionAux.size() ; j ++){
@@ -342,7 +268,6 @@ public class MainActivity extends AppCompatActivity
 
             }
         });
-
     }
 
     public void popUpElegirLocal(){
@@ -512,7 +437,7 @@ public class MainActivity extends AppCompatActivity
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
-        final View v = inflater.inflate(R.layout.popup_eliminar, null);
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
 
         Button header = v.findViewById(R.id.btn_header);
         TextView mensaje = v.findViewById(R.id.tv_mensaje);
@@ -527,6 +452,32 @@ public class MainActivity extends AppCompatActivity
                 finish();
                 startActivity(getIntent());
 
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
+    public void popUpLimpiar(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
+
+        Button header = v.findViewById(R.id.btn_header);
+        header.setText("Limpiar lista");
+        TextView mensaje = v.findViewById(R.id.tv_mensaje);
+
+        mensaje.setText("¿Desea limpiar la lista '" + lista.getNombre() + "'? \n(Esto eliminará todos sus productos)");
+
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                limpiarLista();
             }
         })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
@@ -596,9 +547,16 @@ public class MainActivity extends AppCompatActivity
     public void popUpEliminarDeLista(final Producto producto){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
 
-        builder.setTitle("Eliminar producto");
-        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "' de la lista?");
+        Button header = v.findViewById(R.id.btn_header);
+        TextView mensaje = v.findViewById(R.id.tv_mensaje);
+
+        header.setText("Eliminar producto");
+        mensaje.setText("¿Desea eliminar el producto '" + producto.getNombre() + "' de la lista?");
+
+        builder.setView(v);
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -788,7 +746,7 @@ public class MainActivity extends AppCompatActivity
                     popUpEliminar(lista);
                     break;
                 case R.id.action_limpiar:
-                    limpiarLista();
+                    popUpLimpiar();
                     break;
                 default:
 
@@ -804,6 +762,7 @@ public class MainActivity extends AppCompatActivity
     public void limpiarLista(){
         manager.eliminarProductos_Lista(lista);
         lista.setProductos(new ArrayList<Producto>());
+        actualizarLista();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

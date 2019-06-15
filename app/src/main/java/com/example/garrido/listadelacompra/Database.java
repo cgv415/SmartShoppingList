@@ -57,19 +57,6 @@ public interface Database {
 
     boolean eliminarCategoria(Categoria categoria);
 
-            /*SUBCATEGORIAS*/
-    void crearTablaSubcategoria();
-    long insertarSubcategoria(Subcategoria subcategoria,Categoria categoria);
-
-    ArrayList<Subcategoria> obtenerSubcategorias();
-    ArrayList<String> obtenerNombreSubcategorias();
-    Subcategoria obtenerSubcategoriaById(String id);
-    Subcategoria obtenerSubcategoria(String nombre);
-
-    boolean modificarSubcategoria(Subcategoria subcategoria);
-
-    boolean eliminarSubcategoria(Subcategoria subcategoria);
-
             /*PRODUCTO_LOCAL*/
     void crearTablaProducto_Local();
 
@@ -99,34 +86,6 @@ public interface Database {
     boolean eliminarProducto_Categoria(Producto producto);
     boolean eliminarProductos_Categoria(Categoria categoria);
 
-
-            /*PRODUCTO_SUBCATEGORIA*/
-    void crearTablaProducto_Subcategoria();
-
-    long insertarProducto_Subcategoria(Producto producto, Subcategoria subcategoria);
-
-    Map<Subcategoria,Producto> obtenerSubcategorias_Productos();
-    ArrayList<Producto> obtenerProductos_Subcategoria(Subcategoria subcategoria);
-
-    boolean modificarProducto_Subcategoria(String id, Producto producto, Subcategoria subcategoria);
-
-    /*Eliminar un echo que afecta a un solo producto*/
-    boolean eliminarProducto_Subcategoria(Producto producto);
-    /*Elimina todos los productos con esa subcategoria todo */
-    boolean eliminarProductos_Subcategoria(Subcategoria subcategoria);
-
-        /* CATEGORIA_SUBCATEGORIA */
-
-    void crearTablaCategoria_Subcategoria();
-
-    long insertarCategoria_Subcategoria(Categoria categoria, Subcategoria subcategoria);
-
-    Map<Categoria,Subcategoria> obtenerCategorias_Subcategorias();
-    ArrayList<Subcategoria> obtenerSubcategorias_Categoria(Categoria categoria);
-
-    boolean eliminarSubcategorias_Categoria(Categoria categoria);
-    boolean eliminarSubcategorias_Categoria(ArrayList<Subcategoria> subcategorias);
-
         /*LISTA*/
 
     void crearTablaLista();
@@ -149,7 +108,7 @@ public interface Database {
     void crearTablaProducto_Lista();
 
     long insertarProducto_Lista(Producto producto, Lista lista);
-    long insertarProductos_Lista(Conjunto conjunto, Lista lista);
+    long insertarProductos_Lista(ArrayList<Producto> productos, Lista lista);
 
     Map<Lista,Producto> obtenerListas_Productos();
 
@@ -218,6 +177,5 @@ public interface Database {
     boolean existeTablaLista();
     boolean existeTablaLocal();
     boolean existeTablaProducto();
-    boolean existeTablaSubcategoria();
     boolean existeTablaTickets();
 }

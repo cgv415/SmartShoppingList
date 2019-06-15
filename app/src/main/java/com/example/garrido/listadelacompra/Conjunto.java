@@ -67,7 +67,7 @@ public class Conjunto {
         Producto finProductos = productos.get(productos.size()-1);
         for(Producto p
                 : productos){
-            nombres += p.toString();
+            nombres += p.toJSON();
             if(!finProductos.equals(p)){
                 nombres += ",";
             }

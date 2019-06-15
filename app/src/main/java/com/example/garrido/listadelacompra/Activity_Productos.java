@@ -3,7 +3,6 @@ package com.example.garrido.listadelacompra;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,18 +22,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -59,9 +53,7 @@ public class Activity_Productos extends AppCompatActivity
     EditText etDescripcion;
     EditText etEtiqueta;
 
-    Spinner spTipo;
     Spinner spCategoria;
-    Spinner spSubcategoria;
 
     String agruparPor = "categoria";
 
@@ -103,55 +95,6 @@ public class Activity_Productos extends AppCompatActivity
         final MenuItem item = menu.findItem(R.id.nav_productos);
         item.setChecked(true);
 
-        spTipo = findViewById(R.id.sp_tipo);
-        final ArrayList<String> tipos = new ArrayList<>();
-        tipos.add("producto");
-        tipos.add("categoria");
-        tipos.add("etiqueta");
-
-        ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tipos);
-        spTipo.setAdapter(adapterTipo);
-
-        spTipo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                buscador.setHint(tipos.get(i));
-                String tipo = spTipo.getSelectedItem().toString();
-                switch (tipo) {
-                    case "producto": {
-                        arrayBuscador = manager.obtenerNombreProductos();
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                    case "categoria": {
-                        arrayBuscador = manager.obtenerNombreCategorias();
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                    default: {
-                        arrayBuscador = new ArrayList<>();
-                        for (int j = 0; j < productos.size(); j++) {
-                            arrayBuscador.add(productos.get(j).getEtiqueta());
-                        }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                }
-
-                buscador.setText("");
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
 
         expandableListView = findViewById(R.id.lv_dropdow);
 
@@ -186,6 +129,18 @@ public class Activity_Productos extends AppCompatActivity
         actualizarLista();
 
         arrayBuscador = manager.obtenerNombreProductos();
+        int size = arrayBuscador.size();
+        for(int i = 0; i < size; i++){
+            Producto producto = manager.obtenerProductoByNombre(arrayBuscador.get(i));
+            if(!arrayBuscador.contains(producto.getCategoria().getNombre())){
+                arrayBuscador.add(producto.getCategoria().getNombre());
+            }
+
+            if(!arrayBuscador.contains(producto.getEtiqueta())){
+                arrayBuscador.add(producto.getEtiqueta());
+            }
+        }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, arrayBuscador);
         buscador.setAdapter(adapter);
@@ -200,12 +155,12 @@ public class Activity_Productos extends AppCompatActivity
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                String secuencia = charSequence.toString().toLowerCase();
                 Map<String,ArrayList<String>> mapAux = new TreeMap<>();
                 ArrayList<String> agrupacionAux = new ArrayList<>();
-                String tipo = spTipo.getSelectedItem().toString();
                 ArrayList<String> value;
 
-                if(charSequence.equals("")){
+                if(charSequence.toString().equals("")){
                     actualizarLista();
                 }else {
                     Set<Map.Entry<String, ArrayList<String>>> entrySet = map.entrySet();
@@ -213,51 +168,21 @@ public class Activity_Productos extends AppCompatActivity
                         ArrayList<String> nombresProductos = entry.getValue();
                         for (int j = 0; j < nombresProductos.size(); j++) {
                             Producto producto = manager.obtenerProductoByNombre(nombresProductos.get(j));
-                            switch (tipo) {
-                                case "categoria":
-                                    if (producto.getCategoria().getNombre().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-                                    break;
-                                case "etiqueta":
-                                    if (producto.getEtiqueta().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-
-                                    break;
-                                case "producto":
-                                    if (producto.getNombre().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-                                    break;
+                            if (producto.getNombre().toLowerCase().contains(secuencia)
+                                            || producto.getCategoria().getNombre().toLowerCase().contains(secuencia)
+                                            || producto.getEtiqueta().toLowerCase().contains(secuencia)) {
+                                if (!agrupacionAux.contains(entry.getKey())) {
+                                    value = new ArrayList<>();
+                                    agrupacionAux.add(entry.getKey());
+                                    value.add(producto.getNombre());
+                                    mapAux.put(entry.getKey(), value);
+                                } else {
+                                    value = mapAux.get(entry.getKey());
+                                    value.add(producto.getNombre());
+                                    mapAux.put(entry.getKey(), value);
+                                }
                             }
+
                         }
                     }
 
@@ -376,15 +301,6 @@ public class Activity_Productos extends AppCompatActivity
 
     }
 
-    public void actualizarSubcategorias(){
-        ArrayAdapter<String> adapterSubcategoria = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, nombresSubcategorias);
-        spSubcategoria.setAdapter(adapterSubcategoria);
-
-        if(posSubcat>-1){
-            spSubcategoria.setSelection(posSubcat);
-        }
-    }
-
     public void popUpInsertarProducto(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -397,7 +313,6 @@ public class Activity_Productos extends AppCompatActivity
         etEtiqueta = v.findViewById(R.id.et_alias);
 
         spCategoria = v.findViewById(R.id.sp_categoria);
-        spSubcategoria = v.findViewById(R.id.sp_subcategoria);
 
         nombreCategorias = manager.obtenerNombreCategorias();
         Collections.sort(nombreCategorias);
@@ -411,18 +326,6 @@ public class Activity_Productos extends AppCompatActivity
                 String nombreCategoria = nombreCategorias.get(i);
                 if(nombreCategoria.equals("nueva categoria")){
                     popUpInsertar("categoria");
-
-                }else{
-                    Categoria categoria = manager.obtenerCategoria(nombreCategoria);
-                    ArrayList<Subcategoria> subcategorias = manager.obtenerSubcategorias_Categoria(categoria);
-                    nombresSubcategorias = new ArrayList<>();
-                    for(Subcategoria sucba: subcategorias){
-                        nombresSubcategorias.add(sucba.getNombre());
-                    }
-                    Collections.sort(nombresSubcategorias);
-                    nombresSubcategorias.add("nueva subcategoria");
-
-                    actualizarSubcategorias();
                 }
             }
 
@@ -431,22 +334,6 @@ public class Activity_Productos extends AppCompatActivity
 
             }
         });
-
-        spSubcategoria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String nombreSubcategoria = nombresSubcategorias.get(i);
-                if(nombreSubcategoria.equals("nueva subcategoria")){
-                    popUpInsertar("subcategoria");
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
 
         //builder.setTitle("Insertar Producto");
 
@@ -461,8 +348,6 @@ public class Activity_Productos extends AppCompatActivity
                         producto.setEtiqueta(etEtiqueta.getText().toString().toLowerCase());
                         Categoria categoria = manager.obtenerCategoria(spCategoria.getSelectedItem().toString());
                         producto.setCategoria(categoria);
-                        Subcategoria subcategoria = manager.obtenerSubcategoria(spSubcategoria.getSelectedItem().toString());
-                        producto.setSubcategoria(subcategoria);
 
                         manager.insertarProducto(producto);
 
@@ -490,7 +375,7 @@ public class Activity_Productos extends AppCompatActivity
         final View v = inflater.inflate(R.layout.popup_insertar_producto, null);
 
         Button header = v.findViewById(R.id.btn_header);
-        header.setText("Modificar texto");
+        header.setText("Modificar producto");
 
         comparar = v.findViewById(R.id.btn_gestionar);
 
@@ -512,7 +397,6 @@ public class Activity_Productos extends AppCompatActivity
 
 
         spCategoria = v.findViewById(R.id.sp_categoria);
-        spSubcategoria = v.findViewById(R.id.sp_subcategoria);
 
         nombreCategorias = manager.obtenerNombreCategorias();
         Collections.sort(nombreCategorias);
@@ -529,43 +413,8 @@ public class Activity_Productos extends AppCompatActivity
                 String nombreCategoria = nombreCategorias.get(i);
                 if(nombreCategoria.equals("nueva categoria")){
                     popUpInsertar("categoria");
-                }else{
-                    Categoria categoria = manager.obtenerCategoria(nombreCategoria);
-                    ArrayList<Subcategoria> subcategorias = manager.obtenerSubcategorias_Categoria(categoria);
-                    nombresSubcategorias = new ArrayList<>();
-                    for(Subcategoria sucba: subcategorias){
-                        nombresSubcategorias.add(sucba.getNombre());
-                    }
-                    Collections.sort(nombresSubcategorias);
-                    nombresSubcategorias.add("nueva subcategoria");
-
-                    ArrayAdapter<String> adapterSubcategoria = new ArrayAdapter<>(view.getContext(), android.R.layout.simple_spinner_item, nombresSubcategorias);
-                    spSubcategoria.setAdapter(adapterSubcategoria);
-
-                    int posSubcat = nombresSubcategorias.indexOf(producto.getSubcategoria().getNombre());
-                    spSubcategoria.setSelection(posSubcat);
-                }
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        spSubcategoria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                String nombreSubcategoria = nombresSubcategorias.get(i);
-                if(nombreSubcategoria.equals("nueva subcategoria")){
-                    popUpInsertar("subcategoria");
-                    if(posSubcat>-1){
-                        spSubcategoria.setSelection(posSubcat);
-                    }
                 }
             }
-
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
 
@@ -582,8 +431,6 @@ public class Activity_Productos extends AppCompatActivity
                     producto.setEtiqueta(etEtiqueta.getText().toString().toLowerCase());
                     Categoria categoria = manager.obtenerCategoria(spCategoria.getSelectedItem().toString());
                     producto.setCategoria(categoria);
-                    Subcategoria subcategoria = manager.obtenerSubcategoria(spSubcategoria.getSelectedItem().toString());
-                    producto.setSubcategoria(subcategoria);
 
                     manager.modificarProducto(producto);
 
@@ -611,12 +458,13 @@ public class Activity_Productos extends AppCompatActivity
 
         final View v = inflater.inflate(R.layout.popup_insertar_categoria, null);
 
+        final Button header = v.findViewById(R.id.btn_header);
         final EditText et_categoria = v.findViewById(R.id.et_nombre_producto);
 
         if(tipo=="categoria"){
-            builder.setTitle("Insertar Nueva Categoria");
+            header.setText("Crear Categoria");
         }else{
-            builder.setTitle("Insertar Nueva Subcategoria");
+            header.setText("Crear Subcategoria");
             et_categoria.setHint("subcategoria");
         }
         builder.setView(v);
@@ -633,22 +481,6 @@ public class Activity_Productos extends AppCompatActivity
                     nombreCategorias.add("nueva categoria");
                     posCat = nombreCategorias.indexOf(nombre);
                     actualizarCategorias();
-                }else{
-                    String cat = spCategoria.getSelectedItem().toString();
-                    Categoria categoria = manager.obtenerCategoria(cat);
-
-                    spCategoria.getSelectedItemPosition();
-                    Subcategoria subcategoria = new Subcategoria(et_categoria.getText().toString());
-                    nombresSubcategorias.remove(nombresSubcategorias.size()-1);
-                    long idSubcategoria = manager.insertarSubcategoria(subcategoria,categoria);
-                    subcategoria.setId(String.valueOf(idSubcategoria));
-
-                    nombresSubcategorias.add(subcategoria.getNombre());
-                    Collections.sort(nombresSubcategorias);
-                    nombresSubcategorias.add("nueva subcategoria");
-                    posSubcat = nombresSubcategorias.indexOf(subcategoria.getNombre());
-
-                    actualizarSubcategorias();
                 }
             }
         })
@@ -663,7 +495,11 @@ public class Activity_Productos extends AppCompatActivity
     public void popUpInsertarEnLista(final Producto producto){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View v = inflater.inflate(R.layout.popup_copiar_en_lista, null);
         builder.setTitle("Insertar en lista");
+        builder.setCustomTitle(v);
         //builder.setMessage("Selecciona las listas donde quieres insertar el producto");
         final ArrayList<String> listas = manager.obtenerNombreListas();
 
@@ -711,7 +547,7 @@ public class Activity_Productos extends AppCompatActivity
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
-        final View v = inflater.inflate(R.layout.popup_eliminar, null);
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
 
         Button header = v.findViewById(R.id.btn_header);
         TextView mensaje = v.findViewById(R.id.tv_mensaje);
@@ -742,7 +578,6 @@ public class Activity_Productos extends AppCompatActivity
 
         final View v = inflater.inflate(R.layout.popup_comparar, null);
         builder.setView(v);
-        builder.setTitle(producto.getNombre());
 
         ListView lvComparar = v.findViewById(R.id.lv_comparar);
 
@@ -750,15 +585,6 @@ public class Activity_Productos extends AppCompatActivity
 
         AdapterComparar listAdapter2 = new AdapterComparar(this, comparaciones);
         lvComparar.setAdapter(listAdapter2);
-
-        /*ArrayList<String> list = new ArrayList<>();
-        list.add("Hola");
-        list.add("Hola 2");
-        list.add("Hola 3");
-
-        ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_dropdown_item_1line,list);
-        lvComparar.setAdapter(adapter);*/
-
 
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {

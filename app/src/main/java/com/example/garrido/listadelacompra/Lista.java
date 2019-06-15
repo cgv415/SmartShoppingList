@@ -80,24 +80,25 @@ public class Lista {
         return nombres;
     }
 
-    public String toStringProductos(){
+    public String toJSONProductos(){
         String nombres = "";
-        Producto finProductos = productos.get(productos.size()-1);
-        for(Producto p
-                : productos){
-            nombres += p.toString();
-            if(!finProductos.equals(p)){
-                nombres += ",";
+        if(productos.size()>0){
+            Producto finProductos = productos.get(productos.size()-1);
+            for(Producto p
+                    : productos){
+                nombres += p.toJSON();
+                if(!finProductos.equals(p)){
+                    nombres += ",";
+                }
             }
         }
-
         return nombres;
     }
 
     public String toJSON() {
         return  "'" + nombre + "': {descripcion:'" +
                 descripcion + "',producto:{" +
-                toStringProductos() + "},principal:" +
+                toJSONProductos() + "},principal:" +
                 principal +
                 "}";
     }

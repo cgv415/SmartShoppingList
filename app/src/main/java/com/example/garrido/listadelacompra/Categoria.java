@@ -7,7 +7,6 @@ import java.util.ArrayList;
 public class Categoria implements Comparable<Categoria>{
     private String id;
     private String nombre;
-    private ArrayList<Subcategoria> subcategorias;
     private ArrayList<Producto> productos;
 
     public Categoria(String nombre) {
@@ -22,7 +21,6 @@ public class Categoria implements Comparable<Categoria>{
     public Categoria() {
         nombre = "sin categoria";
         this.id = "1";
-        subcategorias = new ArrayList<>();
         productos = new ArrayList<>();
     }
 
@@ -42,33 +40,6 @@ public class Categoria implements Comparable<Categoria>{
         this.nombre = nombre;
     }
 
-    public ArrayList<Subcategoria> getSubcategorias() {
-        return subcategorias;
-    }
-
-    public ArrayList<String> getNombresSubcategorias(){
-        ArrayList<String> nombres = new ArrayList<>();
-
-        for(Subcategoria subcategoria:subcategorias){
-            nombres.add(subcategoria.toString());
-        }
-
-        return nombres;
-    }
-
-    public ArrayList<String> toStringSubcategorias(){
-        ArrayList<String> nombres = new ArrayList<>();
-
-        for(Subcategoria subcategoria:subcategorias){
-            nombres.add(subcategoria.toString());
-        }
-
-        return nombres;
-    }
-
-    public void setSubcategorias(ArrayList<Subcategoria> subcategorias) {
-        this.subcategorias = subcategorias;
-    }
 
     public ArrayList<Producto> getProductos() {
         return productos;
@@ -100,8 +71,7 @@ public class Categoria implements Comparable<Categoria>{
     }
 
     public String toJSON() {
-        return  "'" + nombre + "':" +
-                toStringSubcategorias();
+        return  "'" + nombre + "':{}";
     }
 
     @Override

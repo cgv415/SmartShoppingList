@@ -56,7 +56,7 @@ public class Local {
         return nombres;
     }
 
-    public String toStringProductos(){
+    public String toJSONProductos(){
         String nombres = "";
         Producto finProductos = productos.get(productos.size()-1);
         for( Producto p
@@ -84,7 +84,7 @@ public class Local {
 
     public String toJSON() {
         return "'" + getNombre() + "':{" +
-                toStringProductos() + "}";
+                toJSONProductos() + "}";
     }
 
     @Override

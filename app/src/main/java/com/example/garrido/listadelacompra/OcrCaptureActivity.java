@@ -346,7 +346,12 @@ public final class OcrCaptureActivity extends AppCompatActivity {
         OcrGraphic graphic = mGraphicOverlay.getGraphicAtLocation(rawX, rawY);
 
         ArrayList<String> bloques = mGraphicOverlay.obtenerBloques();
-        String bloqueSeleccionado = graphic.getText().toLowerCase();
+        String bloqueSeleccionado = "";
+        try{
+           bloqueSeleccionado  = graphic.getText().toLowerCase();
+        }catch (Exception e){
+            Toast.makeText(this,"No se ha encontrado el texto",Toast.LENGTH_LONG).show();
+        }
         String bloquePrincipal = "";
         bpbloque:
         for(String bloque:bloques){
@@ -356,7 +361,6 @@ public final class OcrCaptureActivity extends AppCompatActivity {
             }
         }
 
-        bptotal:
         for(String bloque:bloques){
             if(bloque.toLowerCase().contains("total")){
                 StringTokenizer tokenizer1 = new StringTokenizer(bloque,"\t");
@@ -373,8 +377,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                                     String dob = tokenizer3.nextToken();
                                     dob = dob.replace(",", ".");
                                     double precio = Double.parseDouble(dob);
-                                    total = String.valueOf(precio);
-                                    break bptotal;
+                                    total = String.format("%.2f",precio);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -425,6 +428,8 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                                 int dia = Integer.parseInt(tokFecha.nextToken());
                                 fecha = fech;
                                 hora = tokFechaHora.nextToken();
+
+                                fecha = fecha.replace("-","/");
                             }catch (Exception e){
                                 e.printStackTrace();
                             }
@@ -434,6 +439,7 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                                 try {
                                     int dia = Integer.parseInt(tokFecha.nextToken());
                                     fecha = fech;
+                                    fecha = fecha.replace(".","/");
                                     hora = tokFechaHora.nextToken();
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -445,20 +451,61 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                     break bpfecha;
                 }
             }
-
-            //aqui buscar el total y guardarlo
         }
 
         ArrayList<Producto> productos = new ArrayList<>();
         ArrayList<Producto> arrProductos;
         ArrayList<Double> precios = new ArrayList<>();
 
-        String bloquePrecios = bloquePrincipal.replace(bloqueSeleccionado,"");
-        String bloqueProductos = bloqueSeleccionado;
+        String preciosString = "";
+
+        StringTokenizer tokenPrecios = new StringTokenizer(bloquePrincipal,"\t");
+        int count = tokenPrecios.countTokens() - 1;
+
+        for(int i = 0; i < count; i ++){
+            tokenPrecios.nextToken();
+        }
+
+        while(tokenPrecios.hasMoreTokens()) {
+
+            preciosString = tokenPrecios.nextToken();
+            StringTokenizer sttoken2 = new StringTokenizer(preciosString, "\n");
+            double precio = 0.0;
+            while (sttoken2.hasMoreTokens()) {
+                try {
+                    String dob = sttoken2.nextToken();
+                    StringTokenizer sttoken3 = new StringTokenizer(dob," ");
+                    if(sttoken3.countTokens()>1){
+                        String string2 = sttoken3.nextToken();
+                        String string3 = sttoken3.nextToken();
+                        try{
+                            string3 = string3.replace(",", ".");
+                            precio = Double.parseDouble(string3);
+                        }catch (Exception e){
+                            try{
+                                string2 = string2.replace(",", ".");
+                                precio = Double.parseDouble(string2);
+                            }catch (Exception e2){
+                                e.printStackTrace();
+                            }
+                        }
+                    }else{
+                        dob = dob.replace(",", ".");
+                        precio = Double.parseDouble(dob);
+                    }
+                    if(precio >= 0.0){
+                        precios.add(precio);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
 
         arrProductos = manager.obtenerProductos();
-
-        StringTokenizer tokenProductos = new StringTokenizer(bloqueProductos,"\n");
+        //String bloqueProductos = bloquePrincipal.replace(preciosString,"");
+        StringTokenizer tokenProductos = new StringTokenizer(bloqueSeleccionado,"\n");
         while(tokenProductos.hasMoreTokens()){
             String nombreProducto = tokenProductos.nextToken();
             Producto p = new Producto("");
@@ -473,24 +520,6 @@ public final class OcrCaptureActivity extends AppCompatActivity {
                 p.setNombre(nombreProducto);
             }
             productos.add(p);
-        }
-
-        StringTokenizer tokenPrecios = new StringTokenizer(bloquePrecios,"\t");
-        while(tokenPrecios.hasMoreTokens()) {
-
-            String token = tokenPrecios.nextToken();
-            StringTokenizer sttoken2 = new StringTokenizer(token, "\n");
-            while (sttoken2.hasMoreTokens()) {
-                try {
-                    String dob = sttoken2.nextToken().substring(0, 4);
-                    dob = dob.replace(",", ".");
-                    double precio = Double.parseDouble(dob);
-                    precios.add(precio);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
         }
 
         nombresProductos = new ArrayList<>();

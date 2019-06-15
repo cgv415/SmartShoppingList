@@ -20,10 +20,14 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,18 +52,8 @@ public class Activity_Local extends AppCompatActivity
     Map<String,ArrayList<Producto>> map;
     ArrayList<Producto> productos;
     ArrayList<String> arrayBuscador;
-    ArrayList<String> nombreCategorias;
-    ArrayList<String> nombresSubcategorias;
-
-    EditText etNombre;
-    EditText etDescripcion;
-    EditText etEtiqueta;
-    EditText etPrecio;
-    EditText etMarca;
 
     Spinner spTipo;
-    Spinner spCategoria;
-    Spinner spSubcategoria;
 
     String agruparPor = "categoria";
 
@@ -85,7 +79,11 @@ public class Activity_Local extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                popUpInsertarProductoEnLocal();
+                if(nombreLocales.size() > 0){
+                    popUpInsertarProductoEnLocal();
+                }else{
+                    popUpInsertarLocal();
+                }
             }
         });
 
@@ -108,59 +106,7 @@ public class Activity_Local extends AppCompatActivity
         contraidos = new ArrayList<>();
         nombreLocales = manager.obtenerNombreLocales();
 
-
-        spTipo = findViewById(R.id.sp_tipo);
-        final ArrayList<String> tipos = new ArrayList<>();
-        tipos.add("producto");
-        tipos.add("categoria");
-        tipos.add("etiqueta");
-
-        ArrayAdapter<String> adapterTipo = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, tipos);
-        spTipo.setAdapter(adapterTipo);
-
-        spTipo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                buscador.setHint(tipos.get(i));
-                String tipo = spTipo.getSelectedItem().toString();
-                switch (tipo) {
-                    case "producto": {
-                        arrayBuscador = manager.obtenerNombreProductos();
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                    case "categoria": {
-                        arrayBuscador = manager.obtenerNombreCategorias();
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                    default: {
-                        arrayBuscador = new ArrayList<>();
-                        for (int j = 0; j < productos.size(); j++) {
-                            arrayBuscador.add(productos.get(j).getEtiqueta());
-                        }
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getApplicationContext(),
-                                android.R.layout.simple_dropdown_item_1line, arrayBuscador);
-                        buscador.setAdapter(adapter);
-                        break;
-                    }
-                }
-
-                buscador.setText("");
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
         expandableListView = findViewById(R.id.lv_dropdow);
-
 
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
@@ -172,11 +118,39 @@ public class Activity_Local extends AppCompatActivity
             }
         });
 
+        expandableListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                if (ExpandableListView.getPackedPositionType(l) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                    //Quitar de la lista
+
+                    String nombreproducto = expandableListView.getItemAtPosition(i).toString();
+                    Producto producto = manager.obtenerProductoByNombre(nombreproducto);
+                    popUpEliminarProductoDeLocal(producto);
+
+
+                }
+                return true;
+            }
+        });
+
         buscador = findViewById(R.id.ac_productos);
 
         actualizarLista();
 
         arrayBuscador = manager.obtenerNombreProductos();
+        int size = arrayBuscador.size();
+        for(int i = 0; i < size; i++){
+            Producto producto = manager.obtenerProductoByNombre(arrayBuscador.get(i));
+            if(!arrayBuscador.contains(producto.getCategoria().getNombre())){
+                arrayBuscador.add(producto.getCategoria().getNombre());
+            }
+
+            if(!arrayBuscador.contains(producto.getEtiqueta())){
+                arrayBuscador.add(producto.getEtiqueta());
+            }
+        }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_dropdown_item_1line, arrayBuscador);
         buscador.setAdapter(adapter);
@@ -191,68 +165,38 @@ public class Activity_Local extends AppCompatActivity
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                Map<String,ArrayList<String>> mapAux = new TreeMap<>();
+                String secuencia = charSequence.toString().toLowerCase();
+                Map<String,ArrayList<Producto>> mapAux = new TreeMap<>();
                 ArrayList<String> agrupacionAux = new ArrayList<>();
                 String tipo = spTipo.getSelectedItem().toString();
-                ArrayList<String> value;
+                ArrayList<Producto> value;
 
-                if(charSequence.equals("")){
+                if(charSequence.toString().equals("")){
                     actualizarLista();
                 }else {
                     Set<Map.Entry<String, ArrayList<Producto>>> entrySet = map.entrySet();
                     for (Map.Entry<String, ArrayList<Producto>> entry : entrySet) {
-                        ArrayList<Producto> nombresProductos = entry.getValue();
-                        for (int j = 0; j < nombresProductos.size(); j++) {
-                            Producto producto = manager.obtenerProductoByNombre(nombresProductos.get(j).getNombre());
-                            switch (tipo) {
-                                case "categoria":
-                                    if (producto.getCategoria().getNombre().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-                                    break;
-                                case "etiqueta":
-                                    if (producto.getEtiqueta().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-
-                                    break;
-                                case "producto":
-                                    if (producto.getNombre().contains(charSequence)) {
-                                        if (!agrupacionAux.contains(entry.getKey())) {
-                                            value = new ArrayList<>();
-                                            agrupacionAux.add(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        } else {
-                                            value = mapAux.get(entry.getKey());
-                                            value.add(producto.getNombre());
-                                            mapAux.put(entry.getKey(), value);
-                                        }
-                                    }
-                                    break;
+                        ArrayList<Producto> productosMap = entry.getValue();
+                        for (int j = 0; j < productosMap.size(); j++) {
+                            Producto producto =productosMap.get(j);
+                            if (producto.getNombre().toLowerCase().contains(secuencia)
+                                    || producto.getCategoria().getNombre().toLowerCase().contains(secuencia)
+                                    || producto.getEtiqueta().toLowerCase().contains(secuencia)) {
+                                if (!agrupacionAux.contains(entry.getKey())) {
+                                    value = new ArrayList<>();
+                                    agrupacionAux.add(entry.getKey());
+                                    value.add(producto);
+                                    mapAux.put(entry.getKey(), value);
+                                } else {
+                                    value = mapAux.get(entry.getKey());
+                                    value.add(producto);
+                                    mapAux.put(entry.getKey(), value);
+                                }
                             }
                         }
                     }
 
-                    //listAdapter = new AdapterLocal(getApplicationContext(), agrupacionAux,mapAux);
+                    listAdapter = new AdapterLocal(getApplicationContext(), agrupacionAux,mapAux);
                     expandableListView.setAdapter(listAdapter);
 
                     for(int j = 0; j < agrupacionAux.size() ; j ++){
@@ -365,11 +309,11 @@ public class Activity_Local extends AppCompatActivity
 
         final View v = inflater.inflate(R.layout.popup_insertar_conjunto, null);
 
-
+        final Button header = v.findViewById(R.id.btn_header);
+        header.setText("Crear local");
         final EditText etNombre = v.findViewById(R.id.et_nombre_conjunto);
         final EditText etDescripcion = v.findViewById(R.id.et_descripcion_conjunto);
 
-        builder.setTitle("Crear local");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -481,7 +425,6 @@ public class Activity_Local extends AppCompatActivity
 
         etPrecio.setText(producto.getPrecio().toString());
 
-        builder.setTitle("Modificar precio producto");
         builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
@@ -511,9 +454,15 @@ public class Activity_Local extends AppCompatActivity
     public void popUpEliminarProductoDeLocal(final Producto producto){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
 
-        builder.setTitle("Eliminar Local");
-        builder.setMessage("¿Desea eliminar el producto '" + producto.getNombre() + "' del local?");
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
+
+        final Button header = v.findViewById(R.id.btn_header);
+        header.setText("Eliminar de local");
+        final TextView mensaje = v.findViewById(R.id.tv_mensaje);
+        mensaje.setText("¿Desea eliminar el producto '" + producto.getNombre() + "' del local?");
+        builder.setView(v);
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarProducto_Local(producto, local);
@@ -532,11 +481,17 @@ public class Activity_Local extends AppCompatActivity
     }
 
     public void popUpEliminarLocal(){
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
 
-        builder.setTitle("Eliminar Local");
-        builder.setMessage("¿Desea eliminar el local '" + local.getNombre() + "' y todos sus productos?");
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
+
+        final Button header = v.findViewById(R.id.btn_header);
+        header.setText("Eliminar Local");
+        final TextView mensaje = v.findViewById(R.id.tv_mensaje);
+        mensaje.setText("¿Desea eliminar el local '" + local.getNombre() + "' y todos sus productos?");
+        builder.setView(v);
+
         builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 manager.eliminarLocal(local);
@@ -550,6 +505,33 @@ public class Activity_Local extends AppCompatActivity
                 });
         builder.show();
     }
+
+    public void popUpLimpiar(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        final View v = inflater.inflate(R.layout.popup_mensaje, null);
+
+        Button header = v.findViewById(R.id.btn_header);
+        header.setText("Limpiar local");
+        TextView mensaje = v.findViewById(R.id.tv_mensaje);
+
+        mensaje.setText("¿Desea limpiar el local '" + local.getNombre() + "'? \n(Esto eliminará todos sus productos)");
+
+        builder.setView(v);
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                limpiarLocal();
+            }
+        })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+        builder.show();
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -583,6 +565,7 @@ public class Activity_Local extends AppCompatActivity
     public void limpiarLocal(){
         manager.eliminarProductos_Local(local);
         local.setProductos(new ArrayList<Producto>());
+        actualizarLista();
     }
 
     @Override
@@ -617,7 +600,7 @@ public class Activity_Local extends AppCompatActivity
                     popUpEliminarLocal();
                     break;
                 case R.id.action_limpiar:
-                    limpiarLocal();
+                    popUpLimpiar();
                     break;
                 default:
 
